@@ -1,0 +1,38 @@
+.checkerboard {
+  display: grid;
+  width: fit-content;
+  grid-template-columns: repeat(8, 1fr);
+}
+
+.square {
+  width: 75px;
+  height: 75px;
+  border: 1px solid #926d55;
+  display: grid;
+  place-items: center;
+}
+
+.square-light {
+  background-color: #e8cfad;
+  color: #000;
+}
+
+.square-dark {
+  background-color: #a67d61;
+}
+
+.piece {
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+}
+
+.piece-light {
+  background-color: #fff;
+  color: #000;
+}
+
+.piece-dark {
+  background-color: #000;
+  color: #fff;
+}
