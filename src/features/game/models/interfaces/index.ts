@@ -1,15 +1,27 @@
-import { Color } from '../types';
+import { Set } from '../enums';
 
 export interface Square {
   id: number;
-  coordinate: string;
+  position: Position;
+  location: string;
   color: string;
+  isPlayable: boolean;
   takenBy: Piece | null;
+}
+
+export interface TakenSquare extends Square {
+  takenBy: Piece;
 }
 
 export interface Piece {
   id: number;
-  coordinate: string;
-  set: Color;
+  position: Position;
+  location: string;
+  set: Set;
   isKing: boolean;
+}
+
+export interface Position {
+  rowIndex: number;
+  columnIndex: number;
 }
