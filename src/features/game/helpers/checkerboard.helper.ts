@@ -52,6 +52,7 @@ export function buildDefaultCheckerboard(): Checkerboard {
         color,
         isPlayable,
         takenBy,
+        isPossibleMove: false,
       };
 
       row.push(square);
