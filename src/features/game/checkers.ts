@@ -1,28 +1,41 @@
 import { SQUARES_PER_SIDE } from './helpers/constants';
 import { Set } from './models/enums';
-import { Piece, Position, Square, TakenSquare } from './models/interfaces';
+import {
+  Piece,
+  Position,
+  TakenSquare,
+  Move,
+  Square,
+} from './models/interfaces';
 import { Checkerboard, MovePath } from './models/types';
 
 export function move(
-  from: TakenSquare,
-  to: Square,
+  fromSquare: TakenSquare,
+  toSquare: Square,
   checkerboard: Checkerboard
 ): Checkerboard {
-  const updatedCheckerboard = checkerboard.map((row) =>
-    row.map((square) => ({ ...square }))
-  );
+  const updatedCheckerboard = cloneCheckerboard(checkerboard);
 
   const { rowIndex: fromRowIndex, columnIndex: fromColumnIndex } =
-    from.position;
+    fromSquare.position;
 
-  const { rowIndex: toRowIndex, columnIndex: toColumnIndex } = to.position;
+  const { rowIndex: toRowIndex, columnIndex: toColumnIndex } =
+    toSquare.position;
 
-  const piece: Piece = {
-    ...updatedCheckerboard[fromRowIndex][fromColumnIndex].takenBy!,
-  };
+  const piece: Piece = { ...fromSquare.takenBy };
 
   updatedCheckerboard[fromRowIndex][fromColumnIndex].takenBy = null;
   updatedCheckerboard[toRowIndex][toColumnIndex].takenBy = piece;
+
+  if (
+    !piece.isKing &&
+    isKingCandidate(
+      updatedCheckerboard[toRowIndex][toColumnIndex] as TakenSquare
+    )
+  ) {
+    updatedCheckerboard[toRowIndex][toColumnIndex].takenBy =
+      promoteToKing(piece);
+  }
 
   return updatedCheckerboard;
 }
@@ -38,124 +51,462 @@ export function isPieceMovable(
   );
 }
 
-export function getPossibleMoves(
+export function cloneCheckerboard(checkerboard: Checkerboard): Checkerboard {
+  return checkerboard.map((row) => row.map((square) => ({ ...square })));
+}
+
+export function getPossibleMovePaths(
   square: TakenSquare,
   checkerboard: Checkerboard,
   turn: Set
 ): MovePath[] {
-  const possibleMoves: MovePath[] = [];
+  const possiblePaths: MovePath[] = [];
 
   if (square.takenBy.set !== turn) {
-    return possibleMoves;
+    return possiblePaths;
   }
 
-  addValidMoves(square, turn, checkerboard, possibleMoves);
+  addValidMoves(square, checkerboard, possiblePaths);
 
-  return possibleMoves;
+  // TODO: Consider rule for accessibility
+  addValidChainedMoves(square, checkerboard, possiblePaths);
+
+  return possiblePaths;
 }
 
 function addValidMoves(
-  square: Square,
-  set: Set,
+  selectedSquare: TakenSquare,
   checkerboard: Checkerboard,
-  possibleMoves: MovePath[],
-  currentMovePath: MovePath = [],
-  isCaptureMove = false
+  possiblePaths: MovePath[]
 ): void {
-  const { forwardRow, columnOffsets } = calculateMoveOffsets(
-    set,
-    square.position
-  );
+  const set = selectedSquare.takenBy.set;
+  const isKing = selectedSquare.takenBy.isKing;
 
-  for (const columnOffset of columnOffsets) {
-    if (isWithinCheckerboardBounds(forwardRow, columnOffset)) {
-      const targetSquare = checkerboard[forwardRow][columnOffset];
+  const { rowOffsets, columnOffsets } = isKing
+    ? calculateKingMoveOffsets(selectedSquare.position)
+    : calculateMoveOffsets(set, selectedSquare.position);
 
-      addValidMovesOf(
-        { currentSquare: square, targetSquare },
-        set,
-        checkerboard,
-        possibleMoves,
-        currentMovePath,
-        isCaptureMove
-      );
+  for (const rowIndex of rowOffsets) {
+    for (const columnIndex of columnOffsets) {
+      const moves: Move[] = [];
+
+      let currentSquare: Square = selectedSquare;
+      let currentRowIndex: number = rowIndex;
+      let currentColumnIndex: number = columnIndex;
+
+      let capturedSquare: TakenSquare | null = null;
+      let isCaptureMove = false;
+      let enemyFoundCounter = 0;
+
+      while (isWithinCheckerboardBounds(currentRowIndex, currentColumnIndex)) {
+        const targetSquare: Square =
+          checkerboard[currentRowIndex][currentColumnIndex];
+
+        if (targetSquare.takenBy) {
+          if (targetSquare.takenBy.set !== set) {
+            isCaptureMove = true;
+
+            enemyFoundCounter++;
+
+            if (enemyFoundCounter === 1) {
+              capturedSquare = targetSquare as TakenSquare;
+            }
+          } else {
+            break;
+          }
+        } else {
+          const move: Move = {
+            square: targetSquare,
+            isImmediateMove: true,
+            isCaptureMove,
+            capturedSquare,
+          };
+
+          moves.push(move);
+
+          if (!isKing) {
+            break;
+          }
+        }
+
+        if (enemyFoundCounter > 1) {
+          break;
+        }
+
+        const { rowIndex: newRowIndex, columnIndex: newColumnIndex } =
+          calculateDiagonalOffset(
+            currentSquare.position,
+            targetSquare.position
+          );
+
+        currentSquare = targetSquare;
+        currentRowIndex = newRowIndex;
+        currentColumnIndex = newColumnIndex;
+      }
+
+      for (const move of moves) {
+        possiblePaths.push([move]);
+      }
     }
   }
 }
 
-function addValidMovesOf(
-  {
-    currentSquare,
-    targetSquare,
-  }: { currentSquare: Square; targetSquare: Square },
-  set: Set,
+function addValidChainedMoves(
+  selectedSquare: TakenSquare,
   checkerboard: Checkerboard,
-  possibleMoves: MovePath[],
-  currentMovePath: MovePath = [],
-  isCaptureMove = false
+  possiblePaths: MovePath[]
 ): void {
-  if (!targetSquare.takenBy && !isCaptureMove) {
-    const newMovePath: MovePath = [...currentMovePath, targetSquare];
+  const capturePaths: MovePath[] = getCapturePaths(possiblePaths);
 
-    possibleMoves.push(newMovePath);
-
+  if (capturePaths.length === 0) {
     return;
   }
 
-  if (targetSquare.takenBy?.set === set) {
-    return;
+  const chainedPaths: MovePath[] = selectedSquare.takenBy.isKing
+    ? getKingChainedPaths(selectedSquare, checkerboard, capturePaths)
+    : getChainedPaths(selectedSquare, checkerboard, capturePaths);
+
+  for (const path of chainedPaths) {
+    possiblePaths.push(path);
+  }
+}
+
+function getCapturePaths(possiblePaths: MovePath[]): MovePath[] {
+  return possiblePaths.filter((path) =>
+    path.some((move) => move.isCaptureMove)
+  );
+}
+
+function getChainedPaths(
+  selectedSquare: TakenSquare,
+  checkerboard: Checkerboard,
+  capturePaths: MovePath[]
+): MovePath[] {
+  const chainedPaths: MovePath[] = [];
+
+  for (const path of capturePaths) {
+    const captureMoves: Move[] = path.filter((move) => move.isCaptureMove);
+
+    for (const captureMove of captureMoves) {
+      const newPossibleMoves: Move[] = getPossibleMovesVirtually(
+        captureMove.square,
+        selectedSquare.position,
+        checkerboard,
+        {
+          virtualSquareSet: selectedSquare.takenBy.set,
+          virtualSquareIsKing: false,
+        }
+      );
+
+      for (const newPossibleMove of newPossibleMoves) {
+        const newPath: MovePath = [...path];
+
+        newPath.push(newPossibleMove);
+
+        chainedPaths.push(newPath);
+      }
+    }
   }
 
-  const { rowIndex: oppositeRowIndex, columnIndex: oppositeColumnIndex } =
-    calculateDiagonalOffset(currentSquare.position, targetSquare.position);
+  return chainedPaths;
+}
 
-  if (
-    isWithinCheckerboardBounds(oppositeRowIndex, oppositeColumnIndex) &&
-    !checkerboard[oppositeRowIndex][oppositeColumnIndex].takenBy
-  ) {
-    const newTargetSquare = checkerboard[oppositeRowIndex][oppositeColumnIndex];
-    const newMovePath: MovePath = [...currentMovePath, newTargetSquare];
-    const captureMode = true;
+function getKingChainedPaths(
+  selectedSquare: TakenSquare,
+  checkerboard: Checkerboard,
+  capturePaths: MovePath[]
+): MovePath[] {
+  const chainedPaths: MovePath[] = [];
 
-    possibleMoves.push(newMovePath);
+  for (const path of capturePaths) {
+    const captureMoves: Move[] = path.filter((move) => move.isCaptureMove);
 
-    addValidMoves(
-      newTargetSquare,
-      set,
-      checkerboard,
-      possibleMoves,
-      newMovePath,
-      captureMode
-    );
+    for (const captureMove of captureMoves) {
+      const newPossibleMoves: Move[] = getKingPossibleMovesVirtually(
+        captureMove.square,
+        selectedSquare.position,
+        checkerboard,
+        {
+          virtualSquareSet: selectedSquare.takenBy.set,
+          virtualSquareIsKing: false,
+        }
+      );
+
+      for (const newPossibleMove of newPossibleMoves) {
+        const newPath: MovePath = [...path];
+
+        newPath.push(newPossibleMove);
+
+        chainedPaths.push(newPath);
+      }
+    }
   }
+
+  return chainedPaths;
+}
+
+function getPossibleMovesVirtually(
+  square: Square,
+  selectedSquarePosition: Position,
+  checkerboard: Checkerboard,
+  {
+    virtualSquareSet,
+    virtualSquareIsKing,
+  }: { virtualSquareSet: Set; virtualSquareIsKing: boolean }
+): Move[] {
+  const possibleMoves: Move[] = [];
+
+  const virtualSquare: TakenSquare = {
+    ...square,
+    takenBy: {
+      set: virtualSquareSet,
+      isKing: virtualSquareIsKing,
+    } as Piece,
+  };
+
+  const { rowOffsets, columnOffsets } = calculateMoveOffsets(
+    virtualSquareSet,
+    square.position
+  );
+
+  for (const rowIndex of rowOffsets) {
+    for (const columnIndex of columnOffsets) {
+      let currentSquare: Square = virtualSquare;
+      let currentRowIndex: number = rowIndex;
+      let currentColumnIndex: number = columnIndex;
+
+      let capturedSquare: TakenSquare | null = null;
+      let enemyFoundCounter = 0;
+
+      // TODO: Refactor this considering rules
+      // const {
+      //   rowIndex: comingFromRowIndex,
+      //   columnIndex: comingFromColumnIndex,
+      // } = getComingFromSquarePositon(square.position, selectedSquarePosition);
+
+      while (isWithinCheckerboardBounds(currentRowIndex, currentColumnIndex)) {
+        const targetSquare: Square =
+          checkerboard[currentRowIndex][currentColumnIndex];
+
+        if (targetSquare.takenBy) {
+          if (targetSquare.takenBy.set !== virtualSquareSet) {
+            enemyFoundCounter++;
+
+            if (enemyFoundCounter === 1) {
+              capturedSquare = targetSquare as TakenSquare;
+            }
+          } else {
+            break;
+          }
+        } else {
+          if (enemyFoundCounter === 1) {
+            const move: Move = {
+              square: targetSquare,
+              isImmediateMove: false,
+              isCaptureMove: true,
+              capturedSquare,
+            };
+
+            possibleMoves.push(move);
+          }
+
+          break;
+        }
+
+        const { rowIndex: newRowIndex, columnIndex: newColumnIndex } =
+          calculateDiagonalOffset(
+            currentSquare.position,
+            targetSquare.position
+          );
+
+        currentSquare = targetSquare;
+        currentRowIndex = newRowIndex;
+        currentColumnIndex = newColumnIndex;
+      }
+    }
+  }
+
+  return possibleMoves;
+}
+
+function getKingPossibleMovesVirtually(
+  square: Square,
+  selectedSquarePosition: Position,
+  checkerboard: Checkerboard,
+  {
+    virtualSquareSet,
+    virtualSquareIsKing,
+  }: { virtualSquareSet: Set; virtualSquareIsKing: boolean }
+): Move[] {
+  const possibleMoves: Move[] = [];
+
+  const virtualSquare: TakenSquare = {
+    ...square,
+    takenBy: {
+      set: virtualSquareSet,
+      isKing: virtualSquareIsKing,
+    } as Piece,
+  };
+
+  const { rowOffsets, columnOffsets } = calculateKingMoveOffsets(
+    square.position
+  );
+
+  const { rowIndex: comingFromRowIndex, columnIndex: comingFromColumnIndex } =
+    getComingFromSquarePositon(square.position, selectedSquarePosition);
+
+  for (const rowIndex of rowOffsets) {
+    for (const columnIndex of columnOffsets) {
+      if (
+        rowIndex === comingFromRowIndex &&
+        columnIndex === comingFromColumnIndex
+      ) {
+        continue;
+      }
+
+      let currentSquare: Square = virtualSquare;
+      let currentRowIndex: number = rowIndex;
+      let currentColumnIndex: number = columnIndex;
+
+      let capturedSquare: TakenSquare | null = null;
+      let enemyFoundCounter = 0;
+
+      while (isWithinCheckerboardBounds(currentRowIndex, currentColumnIndex)) {
+        const targetSquare: Square =
+          checkerboard[currentRowIndex][currentColumnIndex];
+
+        if (targetSquare.takenBy) {
+          if (targetSquare.takenBy.set !== virtualSquareSet) {
+            enemyFoundCounter++;
+
+            if (enemyFoundCounter === 1) {
+              capturedSquare = targetSquare as TakenSquare;
+            }
+          } else {
+            break;
+          }
+        } else {
+          if (enemyFoundCounter === 1) {
+            const move: Move = {
+              square: targetSquare,
+              isImmediateMove: false,
+              isCaptureMove: true,
+              capturedSquare,
+            };
+
+            possibleMoves.push(move);
+          }
+        }
+
+        if (enemyFoundCounter > 1) {
+          break;
+        }
+
+        const { rowIndex: newRowIndex, columnIndex: newColumnIndex } =
+          calculateDiagonalOffset(
+            currentSquare.position,
+            targetSquare.position
+          );
+
+        currentSquare = targetSquare;
+        currentRowIndex = newRowIndex;
+        currentColumnIndex = newColumnIndex;
+      }
+    }
+  }
+
+  return possibleMoves;
 }
 
 function isWithinCheckerboardBounds(i: number, j: number): boolean {
   return i >= 0 && i < SQUARES_PER_SIDE && j >= 0 && j < SQUARES_PER_SIDE;
 }
 
+function isKingCandidate(square: TakenSquare): boolean {
+  const { rowIndex } = square.position;
+  const isLightSet = square.takenBy.set === Set.Light;
+
+  return (
+    (isLightSet && rowIndex === 0) ||
+    (!isLightSet && rowIndex === SQUARES_PER_SIDE - 1)
+  );
+}
+
+function promoteToKing(piece: Piece): Piece {
+  return { ...piece, isKing: true };
+}
+
+// TODO: Consider other checkers rules
 function calculateMoveOffsets(
   turn: Set,
   { rowIndex, columnIndex }: Position
-): { forwardRow: number; columnOffsets: [number, number] } {
+): {
+  rowOffsets: [number] | [number, number];
+  columnOffsets: [number, number];
+} {
   const isLightSet = turn === Set.Light;
 
   const forwardRow = isLightSet ? rowIndex - 1 : rowIndex + 1;
   const leftColumn = isLightSet ? columnIndex - 1 : columnIndex + 1;
   const rightColumn = isLightSet ? columnIndex + 1 : columnIndex - 1;
 
-  return { forwardRow, columnOffsets: [leftColumn, rightColumn] };
+  return { rowOffsets: [forwardRow], columnOffsets: [leftColumn, rightColumn] };
+}
+
+function calculateKingMoveOffsets({ rowIndex, columnIndex }: Position): {
+  rowOffsets: [number, number];
+  columnOffsets: [number, number];
+} {
+  const upRow = rowIndex - 1;
+  const downRow = rowIndex + 1;
+  const leftColumn = columnIndex - 1;
+  const rightColumn = columnIndex + 1;
+
+  return {
+    rowOffsets: [upRow, downRow],
+    columnOffsets: [leftColumn, rightColumn],
+  };
 }
 
 function calculateDiagonalOffset(
-  { rowIndex: startRowIndex, columnIndex: startColumnIndex }: Position,
-  { rowIndex: endRowIndex, columnIndex: endColumnIndex }: Position
+  startPosition: Position,
+  endPosition: Position
 ): Position {
-  const deltaRow = endRowIndex - startRowIndex;
-  const deltaColumn = endColumnIndex - startColumnIndex;
+  const { deltaRow, deltaColumn } = calculateDirection(
+    startPosition,
+    endPosition
+  );
 
-  const oppositeRowIndex = endRowIndex + deltaRow;
-  const oppositeColumnIndex = endColumnIndex + deltaColumn;
+  const oppositeRowIndex = endPosition.rowIndex + deltaRow;
+  const oppositeColumnIndex = endPosition.columnIndex + deltaColumn;
 
   return { rowIndex: oppositeRowIndex, columnIndex: oppositeColumnIndex };
+}
+
+function calculateDirection(
+  { rowIndex: startRowIndex, columnIndex: startColumnIndex }: Position,
+  { rowIndex: endRowIndex, columnIndex: endColumnIndex }: Position
+): { deltaRow: number; deltaColumn: number } {
+  return {
+    deltaRow: endRowIndex - startRowIndex,
+    deltaColumn: endColumnIndex - startColumnIndex,
+  };
+}
+
+function getComingFromSquarePositon(
+  currentSquarePosition: Position,
+  selectedSquarePosition: Position
+): Position {
+  const { deltaRow: comingFromDeltaRow, deltaColumn: comingFromDeltaColumn } =
+    calculateDirection(currentSquarePosition, selectedSquarePosition);
+
+  const [comingFromRelativeRow, comingFromRelativeColumn] = [
+    comingFromDeltaRow / Math.abs(comingFromDeltaRow),
+    comingFromDeltaColumn / Math.abs(comingFromDeltaColumn),
+  ];
+
+  return {
+    rowIndex: currentSquarePosition.rowIndex + comingFromRelativeRow,
+    columnIndex: currentSquarePosition.columnIndex + comingFromRelativeColumn,
+  };
 }
