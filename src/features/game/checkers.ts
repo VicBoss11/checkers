@@ -225,7 +225,7 @@ function getKingChainedPaths(
       checkerboard,
       {
         virtualSquareSet: selectedSquare.takenBy.set,
-        virtualSquareIsKing: false,
+        virtualSquareIsKing: true,
       }
     );
 
