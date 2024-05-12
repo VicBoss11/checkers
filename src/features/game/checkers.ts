@@ -185,26 +185,24 @@ function getChainedPaths(
   const chainedPaths: MovePath[] = [];
 
   for (const path of capturePaths) {
-    const captureMoves: Move[] = path.filter((move) => move.isCaptureMove);
+    const lastCaptureMove: Move = path[path.length - 1];
 
-    for (const captureMove of captureMoves) {
-      const newPossibleMoves: Move[] = getPossibleMovesVirtually(
-        captureMove.square,
-        selectedSquare.position,
-        checkerboard,
-        {
-          virtualSquareSet: selectedSquare.takenBy.set,
-          virtualSquareIsKing: false,
-        }
-      );
-
-      for (const newPossibleMove of newPossibleMoves) {
-        const newPath: MovePath = [...path];
-
-        newPath.push(newPossibleMove);
-
-        chainedPaths.push(newPath);
+    const newPossibleMoves: Move[] = getPossibleMovesVirtually(
+      lastCaptureMove.square,
+      selectedSquare.position,
+      checkerboard,
+      {
+        virtualSquareSet: selectedSquare.takenBy.set,
+        virtualSquareIsKing: false,
       }
+    );
+
+    for (const newPossibleMove of newPossibleMoves) {
+      const newPath: MovePath = [...path];
+
+      newPath.push(newPossibleMove);
+
+      chainedPaths.push(newPath);
     }
   }
 
@@ -219,26 +217,24 @@ function getKingChainedPaths(
   const chainedPaths: MovePath[] = [];
 
   for (const path of capturePaths) {
-    const captureMoves: Move[] = path.filter((move) => move.isCaptureMove);
+    const lastCaptureMove: Move = path[path.length - 1];
 
-    for (const captureMove of captureMoves) {
-      const newPossibleMoves: Move[] = getKingPossibleMovesVirtually(
-        captureMove.square,
-        selectedSquare.position,
-        checkerboard,
-        {
-          virtualSquareSet: selectedSquare.takenBy.set,
-          virtualSquareIsKing: false,
-        }
-      );
-
-      for (const newPossibleMove of newPossibleMoves) {
-        const newPath: MovePath = [...path];
-
-        newPath.push(newPossibleMove);
-
-        chainedPaths.push(newPath);
+    const newPossibleMoves: Move[] = getKingPossibleMovesVirtually(
+      lastCaptureMove.square,
+      selectedSquare.position,
+      checkerboard,
+      {
+        virtualSquareSet: selectedSquare.takenBy.set,
+        virtualSquareIsKing: false,
       }
+    );
+
+    for (const newPossibleMove of newPossibleMoves) {
+      const newPath: MovePath = [...path];
+
+      newPath.push(newPossibleMove);
+
+      chainedPaths.push(newPath);
     }
   }
 
