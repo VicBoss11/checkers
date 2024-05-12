@@ -53,6 +53,7 @@ export function buildDefaultCheckerboard(): Checkerboard {
         isPlayable,
         takenBy,
         isPossibleMove: false,
+        isImmediateMove: false,
       };
 
       row.push(square);

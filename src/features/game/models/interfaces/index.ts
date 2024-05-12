@@ -8,6 +8,7 @@ export interface Square {
   isPlayable: boolean;
   takenBy: Piece | null;
   isPossibleMove: boolean;
+  isImmediateMove: boolean;
 }
 
 export interface TakenSquare extends Square {
