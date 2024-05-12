@@ -27,3 +27,10 @@ export interface Position {
   rowIndex: number;
   columnIndex: number;
 }
+
+export interface Move {
+  square: Square;
+  capturedSquare: TakenSquare | null;
+  isCaptureMove: boolean;
+  isImmediateMove: boolean;
+}
