@@ -67,7 +67,6 @@ export function getPossibleMovePaths(
   }
 
   addValidMoves(square, checkerboard, possiblePaths);
-
   // TODO: Consider rule for accessibility
   addValidChainedMoves(square, checkerboard, possiblePaths);
 
@@ -104,12 +103,11 @@ function addValidMoves(
 
         if (targetSquare.takenBy) {
           if (targetSquare.takenBy.set !== set) {
-            isCaptureMove = true;
-
             enemyFoundCounter++;
 
             if (enemyFoundCounter === 1) {
               capturedSquare = targetSquare as TakenSquare;
+              isCaptureMove = true;
             }
           } else {
             break;
@@ -117,9 +115,9 @@ function addValidMoves(
         } else {
           const move: Move = {
             square: targetSquare,
-            isImmediateMove: true,
-            isCaptureMove,
             capturedSquare,
+            isCaptureMove,
+            isImmediateMove: true,
           };
 
           moves.push(move);
@@ -166,9 +164,7 @@ function addValidChainedMoves(
     ? getKingChainedPaths(selectedSquare, checkerboard, capturePaths)
     : getChainedPaths(selectedSquare, checkerboard, capturePaths);
 
-  for (const path of chainedPaths) {
-    possiblePaths.push(path);
-  }
+  possiblePaths.push(...chainedPaths);
 }
 
 function getCapturePaths(possiblePaths: MovePath[]): MovePath[] {
@@ -180,23 +176,44 @@ function getCapturePaths(possiblePaths: MovePath[]): MovePath[] {
 function getChainedPaths(
   selectedSquare: TakenSquare,
   checkerboard: Checkerboard,
-  capturePaths: MovePath[]
+  capturePaths: MovePath[],
+  possiblePaths: MovePath[] = []
 ): MovePath[] {
   const chainedPaths: MovePath[] = [];
+
+  if (capturePaths.length === 0) {
+    return possiblePaths;
+  }
 
   for (const path of capturePaths) {
     const lastCaptureMove: Move = path[path.length - 1];
 
+    // Create a virtual checkerboard to simulate captures
+    const virtualCheckerboard = cloneCheckerboard(checkerboard);
+
+    // Remove captured pieces from the virtual checkerboard
+    for (const captureMove of path) {
+      const { rowIndex, columnIndex } = captureMove.capturedSquare!.position;
+
+      virtualCheckerboard[rowIndex][columnIndex].takenBy = null;
+    }
+
+    // TODO: Important! Refactor this to get the function with a dictionary
     const newPossibleMoves: Move[] = getPossibleMovesVirtually(
       lastCaptureMove.square,
-      selectedSquare.position,
-      checkerboard,
+      virtualCheckerboard,
       {
         virtualSquareSet: selectedSquare.takenBy.set,
         virtualSquareIsKing: false,
       }
     );
 
+    // Since the last element of the path doesn't add any new movements,
+    // the path is added to the possible move paths
+    if (newPossibleMoves.length === 0) {
+      possiblePaths.push(path);
+    }
+
     for (const newPossibleMove of newPossibleMoves) {
       const newPath: MovePath = [...path];
 
@@ -206,29 +223,55 @@ function getChainedPaths(
     }
   }
 
-  return chainedPaths;
+  return getKingChainedPaths(
+    selectedSquare,
+    checkerboard,
+    chainedPaths,
+    possiblePaths
+  );
 }
 
 function getKingChainedPaths(
   selectedSquare: TakenSquare,
   checkerboard: Checkerboard,
-  capturePaths: MovePath[]
+  capturePaths: MovePath[],
+  possiblePaths: MovePath[] = []
 ): MovePath[] {
   const chainedPaths: MovePath[] = [];
+
+  if (capturePaths.length === 0) {
+    return possiblePaths;
+  }
 
   for (const path of capturePaths) {
     const lastCaptureMove: Move = path[path.length - 1];
 
+    // Create a virtual checkerboard to simulate captures
+    const virtualCheckerboard = cloneCheckerboard(checkerboard);
+
+    // Remove captured pieces from the virtual checkerboard
+    for (const captureMove of path) {
+      const { rowIndex, columnIndex } = captureMove.capturedSquare!.position;
+
+      virtualCheckerboard[rowIndex][columnIndex].takenBy = null;
+    }
+
+    // TODO: Important! Refactor this to get the function with a dictionary
     const newPossibleMoves: Move[] = getKingPossibleMovesVirtually(
       lastCaptureMove.square,
-      selectedSquare.position,
-      checkerboard,
+      virtualCheckerboard,
       {
         virtualSquareSet: selectedSquare.takenBy.set,
         virtualSquareIsKing: true,
       }
     );
 
+    // Since the last element of the path doesn't add any new movements,
+    // the path is added to the possible move paths
+    if (newPossibleMoves.length === 0) {
+      possiblePaths.push(path);
+    }
+
     for (const newPossibleMove of newPossibleMoves) {
       const newPath: MovePath = [...path];
 
@@ -238,12 +281,16 @@ function getKingChainedPaths(
     }
   }
 
-  return chainedPaths;
+  return getKingChainedPaths(
+    selectedSquare,
+    checkerboard,
+    chainedPaths,
+    possiblePaths
+  );
 }
 
 function getPossibleMovesVirtually(
   square: Square,
-  selectedSquarePosition: Position,
   checkerboard: Checkerboard,
   {
     virtualSquareSet,
@@ -274,12 +321,6 @@ function getPossibleMovesVirtually(
       let capturedSquare: TakenSquare | null = null;
       let enemyFoundCounter = 0;
 
-      // TODO: Refactor this considering rules
-      // const {
-      //   rowIndex: comingFromRowIndex,
-      //   columnIndex: comingFromColumnIndex,
-      // } = getComingFromSquarePositon(square.position, selectedSquarePosition);
-
       while (isWithinCheckerboardBounds(currentRowIndex, currentColumnIndex)) {
         const targetSquare: Square =
           checkerboard[currentRowIndex][currentColumnIndex];
@@ -298,9 +339,9 @@ function getPossibleMovesVirtually(
           if (enemyFoundCounter === 1) {
             const move: Move = {
               square: targetSquare,
-              isImmediateMove: false,
-              isCaptureMove: true,
               capturedSquare,
+              isCaptureMove: true,
+              isImmediateMove: false,
             };
 
             possibleMoves.push(move);
@@ -327,7 +368,6 @@ function getPossibleMovesVirtually(
 
 function getKingPossibleMovesVirtually(
   square: Square,
-  selectedSquarePosition: Position,
   checkerboard: Checkerboard,
   {
     virtualSquareSet,
@@ -348,18 +388,8 @@ function getKingPossibleMovesVirtually(
     square.position
   );
 
-  const { rowIndex: comingFromRowIndex, columnIndex: comingFromColumnIndex } =
-    getComingFromSquarePositon(square.position, selectedSquarePosition);
-
   for (const rowIndex of rowOffsets) {
     for (const columnIndex of columnOffsets) {
-      if (
-        rowIndex === comingFromRowIndex &&
-        columnIndex === comingFromColumnIndex
-      ) {
-        continue;
-      }
-
       let currentSquare: Square = virtualSquare;
       let currentRowIndex: number = rowIndex;
       let currentColumnIndex: number = columnIndex;
@@ -385,9 +415,9 @@ function getKingPossibleMovesVirtually(
           if (enemyFoundCounter === 1) {
             const move: Move = {
               square: targetSquare,
-              isImmediateMove: false,
-              isCaptureMove: true,
               capturedSquare,
+              isCaptureMove: true,
+              isImmediateMove: false,
             };
 
             possibleMoves.push(move);
