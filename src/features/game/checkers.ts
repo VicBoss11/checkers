@@ -518,21 +518,3 @@ function calculateDirection(
     deltaColumn: endColumnIndex - startColumnIndex,
   };
 }
-
-function getComingFromSquarePositon(
-  currentSquarePosition: Position,
-  selectedSquarePosition: Position
-): Position {
-  const { deltaRow: comingFromDeltaRow, deltaColumn: comingFromDeltaColumn } =
-    calculateDirection(currentSquarePosition, selectedSquarePosition);
-
-  const [comingFromRelativeRow, comingFromRelativeColumn] = [
-    comingFromDeltaRow / Math.abs(comingFromDeltaRow),
-    comingFromDeltaColumn / Math.abs(comingFromDeltaColumn),
-  ];
-
-  return {
-    rowIndex: currentSquarePosition.rowIndex + comingFromRelativeRow,
-    columnIndex: currentSquarePosition.columnIndex + comingFromRelativeColumn,
-  };
-}
