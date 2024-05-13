@@ -55,7 +55,7 @@ export function cloneCheckerboard(checkerboard: Checkerboard): Checkerboard {
   return checkerboard.map((row) => row.map((square) => ({ ...square })));
 }
 
-export function getPossibleMovePaths(
+export function getMovePaths(
   square: TakenSquare,
   checkerboard: Checkerboard,
   turn: Set
@@ -66,386 +66,300 @@ export function getPossibleMovePaths(
     return possiblePaths;
   }
 
-  addValidMoves(square, checkerboard, possiblePaths);
+  const immediatePaths: MovePath[] = getImmediatePaths(square, checkerboard);
   // TODO: Consider rule for accessibility
-  addValidChainedMoves(square, checkerboard, possiblePaths);
+  const nonImmediatePaths: MovePath[] = getNonImmediatePaths(
+    square,
+    checkerboard,
+    immediatePaths
+  );
 
-  return possiblePaths;
+  const paths: MovePath[] = [...immediatePaths, ...nonImmediatePaths];
+
+  return paths;
 }
 
-function addValidMoves(
-  selectedSquare: TakenSquare,
-  checkerboard: Checkerboard,
-  possiblePaths: MovePath[]
-): void {
-  const set = selectedSquare.takenBy.set;
-  const isKing = selectedSquare.takenBy.isKing;
+function getImmediatePaths(
+  square: TakenSquare,
+  checkerboard: Checkerboard
+): MovePath[] {
+  const immediatePaths: MovePath[] = [];
 
-  const { rowOffsets, columnOffsets } = isKing
-    ? calculateKingMoveOffsets(selectedSquare.position)
-    : calculateMoveOffsets(set, selectedSquare.position);
+  const set = square.takenBy.set;
+  const isKing = square.takenBy.isKing;
+  const pieceTypeKey: 0 | 1 = isKing ? 1 : 0;
+
+  const { rowOffsets, columnOffsets } = selectCalculateMoveOffsetsFunction(
+    pieceTypeKey
+  )(square.position, set);
 
   for (const rowIndex of rowOffsets) {
     for (const columnIndex of columnOffsets) {
-      const moves: Move[] = [];
-
-      let currentSquare: Square = selectedSquare;
-      let currentRowIndex: number = rowIndex;
-      let currentColumnIndex: number = columnIndex;
-
-      let capturedSquare: TakenSquare | null = null;
-      let isCaptureMove = false;
-      let enemyFoundCounter = 0;
-
-      while (isWithinCheckerboardBounds(currentRowIndex, currentColumnIndex)) {
-        const targetSquare: Square =
-          checkerboard[currentRowIndex][currentColumnIndex];
-
-        if (targetSquare.takenBy) {
-          if (targetSquare.takenBy.set !== set) {
-            enemyFoundCounter++;
-
-            if (enemyFoundCounter === 1) {
-              capturedSquare = targetSquare as TakenSquare;
-              isCaptureMove = true;
-            }
-          } else {
-            break;
-          }
-        } else {
-          const move: Move = {
-            square: targetSquare,
-            capturedSquare,
-            isCaptureMove,
-            isImmediateMove: true,
-          };
-
-          moves.push(move);
-
-          if (!isKing) {
-            break;
-          }
-        }
-
-        if (enemyFoundCounter > 1) {
-          break;
-        }
-
-        const { rowIndex: newRowIndex, columnIndex: newColumnIndex } =
-          calculateDiagonalOffset(
-            currentSquare.position,
-            targetSquare.position
-          );
-
-        currentSquare = targetSquare;
-        currentRowIndex = newRowIndex;
-        currentColumnIndex = newColumnIndex;
-      }
+      const moves: Move[] = selectGetMovesFunction(pieceTypeKey)(
+        square,
+        { rowIndex, columnIndex },
+        checkerboard
+      );
 
       for (const move of moves) {
-        possiblePaths.push([move]);
+        immediatePaths.push([move]);
       }
     }
   }
+
+  return immediatePaths;
 }
 
-function addValidChainedMoves(
-  selectedSquare: TakenSquare,
+function getNonImmediatePaths(
+  square: TakenSquare,
   checkerboard: Checkerboard,
-  possiblePaths: MovePath[]
-): void {
-  const capturePaths: MovePath[] = getCapturePaths(possiblePaths);
+  immediatePaths?: MovePath[]
+): MovePath[] {
+  const paths = immediatePaths ?? getImmediatePaths(square, checkerboard);
 
-  if (capturePaths.length === 0) {
-    return;
+  if (paths.length === 0) {
+    return paths;
   }
 
-  const chainedPaths: MovePath[] = selectedSquare.takenBy.isKing
-    ? getKingChainedPaths(selectedSquare, checkerboard, capturePaths)
-    : getChainedPaths(selectedSquare, checkerboard, capturePaths);
+  const capturePaths: MovePath[] = getCapturePaths(paths);
 
-  possiblePaths.push(...chainedPaths);
+  if (capturePaths.length === 0) {
+    return paths;
+  }
+
+  const chainedPaths: MovePath[] = getChainedPaths(
+    square,
+    checkerboard,
+    capturePaths
+  );
+
+  return chainedPaths;
 }
 
-function getCapturePaths(possiblePaths: MovePath[]): MovePath[] {
-  return possiblePaths.filter((path) =>
-    path.some((move) => move.isCaptureMove)
-  );
+function selectGetMovesFunction(pieceTypeKey: 0 | 1 = 0) {
+  const movesFunctions = [getNonKingMoves, getKingMoves];
+
+  return movesFunctions[pieceTypeKey];
+}
+
+function getNonKingMoves(
+  square: TakenSquare,
+  { rowIndex: toRowIndex, columnIndex: toColumnIndex }: Position,
+  checkerboard: Checkerboard,
+  areImmediateMoves = true
+): Move[] {
+  const moves: Move[] = [];
+
+  const initialSquare: TakenSquare = square;
+  const initialSet = square.takenBy.set;
+
+  let currentSquare: Square = initialSquare;
+  let currentToRowIndex: number = toRowIndex;
+  let currentToColumnIndex: number = toColumnIndex;
+
+  let capturedSquare: TakenSquare | null = null;
+  let isCaptureMove = false;
+  let enemyFoundCounter = 0;
+
+  while (isWithinCheckerboardBounds(currentToRowIndex, currentToColumnIndex)) {
+    const targetSquare: Square =
+      checkerboard[currentToRowIndex][currentToColumnIndex];
+
+    if (targetSquare.takenBy) {
+      if (targetSquare.takenBy.set !== initialSet) {
+        enemyFoundCounter++;
+
+        if (enemyFoundCounter === 1) {
+          capturedSquare = targetSquare as TakenSquare;
+          isCaptureMove = true;
+        }
+      } else {
+        break;
+      }
+    } else {
+      const move: Move = {
+        square: targetSquare,
+        capturedSquare,
+        isCaptureMove,
+        isImmediateMove: areImmediateMoves,
+      };
+
+      if (areImmediateMoves) {
+        moves.push(move);
+      } else if (enemyFoundCounter === 1) {
+        moves.push(move);
+      }
+
+      break;
+    }
+
+    if (enemyFoundCounter > 1) {
+      break;
+    }
+
+    const { rowIndex: newToRowIndex, columnIndex: newToColumnIndex } =
+      calculateDiagonalOffset(currentSquare.position, targetSquare.position);
+
+    currentSquare = targetSquare;
+    currentToRowIndex = newToRowIndex;
+    currentToColumnIndex = newToColumnIndex;
+  }
+
+  return moves;
+}
+
+function getKingMoves(
+  square: TakenSquare,
+  { rowIndex: toRowIndex, columnIndex: toColumnIndex }: Position,
+  checkerboard: Checkerboard,
+  areImmediateMoves = true
+): Move[] {
+  const moves: Move[] = [];
+
+  const initialSquare: TakenSquare = square;
+  const initialSet = square.takenBy.set;
+
+  let currentSquare: Square = initialSquare;
+  let currentToRowIndex: number = toRowIndex;
+  let currentToColumnIndex: number = toColumnIndex;
+
+  let capturedSquare: TakenSquare | null = null;
+  let isCaptureMove = false;
+  let enemyFoundCounter = 0;
+
+  while (isWithinCheckerboardBounds(currentToRowIndex, currentToColumnIndex)) {
+    const targetSquare: Square =
+      checkerboard[currentToRowIndex][currentToColumnIndex];
+
+    if (targetSquare.takenBy) {
+      if (targetSquare.takenBy.set !== initialSet) {
+        enemyFoundCounter++;
+
+        if (enemyFoundCounter === 1) {
+          capturedSquare = targetSquare as TakenSquare;
+          isCaptureMove = true;
+        }
+      } else {
+        break;
+      }
+    } else {
+      const move: Move = {
+        square: targetSquare,
+        capturedSquare,
+        isCaptureMove,
+        isImmediateMove: areImmediateMoves,
+      };
+
+      if (areImmediateMoves) {
+        moves.push(move);
+      } else if (enemyFoundCounter === 1) {
+        moves.push(move);
+      }
+    }
+
+    if (enemyFoundCounter > 1) {
+      break;
+    }
+
+    const { rowIndex: newToRowIndex, columnIndex: newToColumnIndex } =
+      calculateDiagonalOffset(currentSquare.position, targetSquare.position);
+
+    currentSquare = targetSquare;
+    currentToRowIndex = newToRowIndex;
+    currentToColumnIndex = newToColumnIndex;
+  }
+
+  return moves;
+}
+
+function getCapturePaths(paths: MovePath[]): MovePath[] {
+  return paths.filter((path) => path.some((move) => move.isCaptureMove));
 }
 
 function getChainedPaths(
-  selectedSquare: TakenSquare,
+  square: TakenSquare,
   checkerboard: Checkerboard,
   capturePaths: MovePath[],
-  possiblePaths: MovePath[] = []
+  paths: MovePath[] = []
 ): MovePath[] {
   const chainedPaths: MovePath[] = [];
 
   if (capturePaths.length === 0) {
-    return possiblePaths;
+    return paths;
   }
 
-  for (const path of capturePaths) {
-    const lastCaptureMove: Move = path[path.length - 1];
-
+  for (const capturePath of capturePaths) {
+    const lastCaptureMove: Move = capturePath[capturePath.length - 1];
     // Create a virtual checkerboard to simulate captures
     const virtualCheckerboard = cloneCheckerboard(checkerboard);
 
     // Remove captured pieces from the virtual checkerboard
-    for (const captureMove of path) {
+    for (const captureMove of capturePath) {
       const { rowIndex, columnIndex } = captureMove.capturedSquare!.position;
 
       virtualCheckerboard[rowIndex][columnIndex].takenBy = null;
     }
 
-    // TODO: Important! Refactor this to get the function with a dictionary
-    const newPossibleMoves: Move[] = getPossibleMovesVirtually(
-      lastCaptureMove.square,
-      virtualCheckerboard,
-      {
-        virtualSquareSet: selectedSquare.takenBy.set,
-        virtualSquareIsKing: false,
-      }
+    // We need to consider the virtual square as if it were taken by a piece
+    const virtualSquare: TakenSquare = {
+      ...lastCaptureMove.square,
+      takenBy: {
+        set: square.takenBy.set,
+        isKing: square.takenBy.isKing,
+      } as Piece,
+    };
+
+    const newMoves: Move[] = getMovesVirtually(
+      virtualSquare,
+      virtualCheckerboard
     );
 
-    // Since the last element of the path doesn't add any new movements,
+    // Since the last element of the path doesn't add any new moves,
     // the path is added to the possible move paths
-    if (newPossibleMoves.length === 0) {
-      possiblePaths.push(path);
+    if (newMoves.length === 0) {
+      paths.push(capturePath);
     }
 
-    for (const newPossibleMove of newPossibleMoves) {
-      const newPath: MovePath = [...path];
+    for (const newMove of newMoves) {
+      const newPath: MovePath = [...capturePath];
 
-      newPath.push(newPossibleMove);
+      newPath.push(newMove);
 
       chainedPaths.push(newPath);
     }
   }
 
-  return getKingChainedPaths(
-    selectedSquare,
-    checkerboard,
-    chainedPaths,
-    possiblePaths
-  );
+  return getChainedPaths(square, checkerboard, chainedPaths, paths);
 }
 
-function getKingChainedPaths(
-  selectedSquare: TakenSquare,
-  checkerboard: Checkerboard,
-  capturePaths: MovePath[],
-  possiblePaths: MovePath[] = []
-): MovePath[] {
-  const chainedPaths: MovePath[] = [];
-
-  if (capturePaths.length === 0) {
-    return possiblePaths;
-  }
-
-  for (const path of capturePaths) {
-    const lastCaptureMove: Move = path[path.length - 1];
-
-    // Create a virtual checkerboard to simulate captures
-    const virtualCheckerboard = cloneCheckerboard(checkerboard);
-
-    // Remove captured pieces from the virtual checkerboard
-    for (const captureMove of path) {
-      const { rowIndex, columnIndex } = captureMove.capturedSquare!.position;
-
-      virtualCheckerboard[rowIndex][columnIndex].takenBy = null;
-    }
-
-    // TODO: Important! Refactor this to get the function with a dictionary
-    const newPossibleMoves: Move[] = getKingPossibleMovesVirtually(
-      lastCaptureMove.square,
-      virtualCheckerboard,
-      {
-        virtualSquareSet: selectedSquare.takenBy.set,
-        virtualSquareIsKing: true,
-      }
-    );
-
-    // Since the last element of the path doesn't add any new movements,
-    // the path is added to the possible move paths
-    if (newPossibleMoves.length === 0) {
-      possiblePaths.push(path);
-    }
-
-    for (const newPossibleMove of newPossibleMoves) {
-      const newPath: MovePath = [...path];
-
-      newPath.push(newPossibleMove);
-
-      chainedPaths.push(newPath);
-    }
-  }
-
-  return getKingChainedPaths(
-    selectedSquare,
-    checkerboard,
-    chainedPaths,
-    possiblePaths
-  );
-}
-
-function getPossibleMovesVirtually(
-  square: Square,
-  checkerboard: Checkerboard,
-  {
-    virtualSquareSet,
-    virtualSquareIsKing,
-  }: { virtualSquareSet: Set; virtualSquareIsKing: boolean }
+function getMovesVirtually(
+  virtualSquare: TakenSquare,
+  virtualCheckerboard: Checkerboard
 ): Move[] {
-  const possibleMoves: Move[] = [];
+  const moves: Move[] = [];
 
-  const virtualSquare: TakenSquare = {
-    ...square,
-    takenBy: {
-      set: virtualSquareSet,
-      isKing: virtualSquareIsKing,
-    } as Piece,
-  };
+  const pieceTypeKey: 0 | 1 = virtualSquare.takenBy.isKing ? 1 : 0;
 
-  const { rowOffsets, columnOffsets } = calculateMoveOffsets(
-    virtualSquareSet,
-    square.position
-  );
+  const { rowOffsets, columnOffsets } = selectCalculateMoveOffsetsFunction(
+    pieceTypeKey
+  )(virtualSquare.position, virtualSquare.takenBy.set);
 
   for (const rowIndex of rowOffsets) {
     for (const columnIndex of columnOffsets) {
-      let currentSquare: Square = virtualSquare;
-      let currentRowIndex: number = rowIndex;
-      let currentColumnIndex: number = columnIndex;
+      const newMoves: Move[] = selectGetMovesFunction(pieceTypeKey)(
+        virtualSquare,
+        { rowIndex, columnIndex },
+        virtualCheckerboard,
+        false
+      );
 
-      let capturedSquare: TakenSquare | null = null;
-      let enemyFoundCounter = 0;
-
-      while (isWithinCheckerboardBounds(currentRowIndex, currentColumnIndex)) {
-        const targetSquare: Square =
-          checkerboard[currentRowIndex][currentColumnIndex];
-
-        if (targetSquare.takenBy) {
-          if (targetSquare.takenBy.set !== virtualSquareSet) {
-            enemyFoundCounter++;
-
-            if (enemyFoundCounter === 1) {
-              capturedSquare = targetSquare as TakenSquare;
-            }
-          } else {
-            break;
-          }
-        } else {
-          if (enemyFoundCounter === 1) {
-            const move: Move = {
-              square: targetSquare,
-              capturedSquare,
-              isCaptureMove: true,
-              isImmediateMove: false,
-            };
-
-            possibleMoves.push(move);
-          }
-
-          break;
-        }
-
-        const { rowIndex: newRowIndex, columnIndex: newColumnIndex } =
-          calculateDiagonalOffset(
-            currentSquare.position,
-            targetSquare.position
-          );
-
-        currentSquare = targetSquare;
-        currentRowIndex = newRowIndex;
-        currentColumnIndex = newColumnIndex;
+      if (newMoves.length > 0) {
+        moves.push(...newMoves);
       }
     }
   }
 
-  return possibleMoves;
-}
-
-function getKingPossibleMovesVirtually(
-  square: Square,
-  checkerboard: Checkerboard,
-  {
-    virtualSquareSet,
-    virtualSquareIsKing,
-  }: { virtualSquareSet: Set; virtualSquareIsKing: boolean }
-): Move[] {
-  const possibleMoves: Move[] = [];
-
-  const virtualSquare: TakenSquare = {
-    ...square,
-    takenBy: {
-      set: virtualSquareSet,
-      isKing: virtualSquareIsKing,
-    } as Piece,
-  };
-
-  const { rowOffsets, columnOffsets } = calculateKingMoveOffsets(
-    square.position
-  );
-
-  for (const rowIndex of rowOffsets) {
-    for (const columnIndex of columnOffsets) {
-      let currentSquare: Square = virtualSquare;
-      let currentRowIndex: number = rowIndex;
-      let currentColumnIndex: number = columnIndex;
-
-      let capturedSquare: TakenSquare | null = null;
-      let enemyFoundCounter = 0;
-
-      while (isWithinCheckerboardBounds(currentRowIndex, currentColumnIndex)) {
-        const targetSquare: Square =
-          checkerboard[currentRowIndex][currentColumnIndex];
-
-        if (targetSquare.takenBy) {
-          if (targetSquare.takenBy.set !== virtualSquareSet) {
-            enemyFoundCounter++;
-
-            if (enemyFoundCounter === 1) {
-              capturedSquare = targetSquare as TakenSquare;
-            }
-          } else {
-            break;
-          }
-        } else {
-          if (enemyFoundCounter === 1) {
-            const move: Move = {
-              square: targetSquare,
-              capturedSquare,
-              isCaptureMove: true,
-              isImmediateMove: false,
-            };
-
-            possibleMoves.push(move);
-          }
-        }
-
-        if (enemyFoundCounter > 1) {
-          break;
-        }
-
-        const { rowIndex: newRowIndex, columnIndex: newColumnIndex } =
-          calculateDiagonalOffset(
-            currentSquare.position,
-            targetSquare.position
-          );
-
-        currentSquare = targetSquare;
-        currentRowIndex = newRowIndex;
-        currentColumnIndex = newColumnIndex;
-      }
-    }
-  }
-
-  return possibleMoves;
-}
-
-function isWithinCheckerboardBounds(i: number, j: number): boolean {
-  return i >= 0 && i < SQUARES_PER_SIDE && j >= 0 && j < SQUARES_PER_SIDE;
+  return moves;
 }
 
 function isKingCandidate(square: TakenSquare): boolean {
@@ -462,14 +376,29 @@ function promoteToKing(piece: Piece): Piece {
   return { ...piece, isKing: true };
 }
 
+function isWithinCheckerboardBounds(i: number, j: number): boolean {
+  return i >= 0 && i < SQUARES_PER_SIDE && j >= 0 && j < SQUARES_PER_SIDE;
+}
+
+interface Offsets {
+  rowOffsets: number[];
+  columnOffsets: number[];
+}
+
+function selectCalculateMoveOffsetsFunction(pieceTypeKey: 0 | 1 = 0) {
+  const calculateMoveOffsetsFunctions = [
+    calculateNonKingMoveOffsets,
+    calculateKingMoveOffsets,
+  ];
+
+  return calculateMoveOffsetsFunctions[pieceTypeKey];
+}
+
 // TODO: Consider other checkers rules
-function calculateMoveOffsets(
-  turn: Set,
-  { rowIndex, columnIndex }: Position
-): {
-  rowOffsets: [number] | [number, number];
-  columnOffsets: [number, number];
-} {
+function calculateNonKingMoveOffsets(
+  { rowIndex, columnIndex }: Position,
+  turn: Set
+): Offsets {
   const isLightSet = turn === Set.Light;
 
   const forwardRow = isLightSet ? rowIndex - 1 : rowIndex + 1;
@@ -479,10 +408,10 @@ function calculateMoveOffsets(
   return { rowOffsets: [forwardRow], columnOffsets: [leftColumn, rightColumn] };
 }
 
-function calculateKingMoveOffsets({ rowIndex, columnIndex }: Position): {
-  rowOffsets: [number, number];
-  columnOffsets: [number, number];
-} {
+function calculateKingMoveOffsets(
+  { rowIndex, columnIndex }: Position,
+  turn: Set
+): Offsets {
   const upRow = rowIndex - 1;
   const downRow = rowIndex + 1;
   const leftColumn = columnIndex - 1;
