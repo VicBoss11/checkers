@@ -1,5 +1,12 @@
-import { SQUARES_PER_SIDE } from './helpers/constants';
-import { Set } from './models/enums';
+import {
+  cloneCheckerboard,
+  isDarkSet,
+  isLightSet,
+  isOnFirstRow,
+  isOnLastRow,
+} from './helpers/checkers.helper';
+import { SQUARES_PER_SIDE } from './helpers/constants/checkers';
+import { PieceType, Set } from './models/enums';
 import {
   Piece,
   Position,
@@ -7,95 +14,71 @@ import {
   Move,
   Square,
 } from './models/interfaces';
+import { GameState } from './models/interfaces/game-state';
 import { Checkerboard, MovePath } from './models/types';
 
 export function move(
   fromSquare: TakenSquare,
   toSquare: Square,
-  checkerboard: Checkerboard
+  checkerboard: Checkerboard,
+  immediatePaths: MovePath[],
+  isCaptureMove: boolean
 ): Checkerboard {
-  const updatedCheckerboard = cloneCheckerboard(checkerboard);
+  const newCheckerboard = cloneCheckerboard(checkerboard);
+
+  if (isCaptureMove) {
+    const capturedSquare = getImmediateMove(
+      toSquare,
+      immediatePaths
+    ).capturedSquare!;
+
+    const { rowIndex: capturedRowIndex, columnIndex: capturedColumnIndex } =
+      capturedSquare.position;
+
+    newCheckerboard[capturedRowIndex][capturedColumnIndex].takenBy = null;
+  }
 
   const { rowIndex: fromRowIndex, columnIndex: fromColumnIndex } =
     fromSquare.position;
-
   const { rowIndex: toRowIndex, columnIndex: toColumnIndex } =
     toSquare.position;
 
-  const piece: Piece = { ...fromSquare.takenBy };
+  // Now targetSquare is taken by the piece that was in fromSquare
+  const targetSquare: TakenSquare = {
+    ...newCheckerboard[toRowIndex][toColumnIndex],
+    takenBy: {
+      ...fromSquare.takenBy,
+      position: toSquare.position,
+      location: toSquare.location,
+    },
+  };
 
-  updatedCheckerboard[fromRowIndex][fromColumnIndex].takenBy = null;
-  updatedCheckerboard[toRowIndex][toColumnIndex].takenBy = piece;
+  newCheckerboard[toRowIndex][toColumnIndex] = targetSquare;
+  newCheckerboard[fromRowIndex][fromColumnIndex].takenBy = null;
 
-  if (
-    !piece.isKing &&
-    isKingCandidate(
-      updatedCheckerboard[toRowIndex][toColumnIndex] as TakenSquare
-    )
-  ) {
-    updatedCheckerboard[toRowIndex][toColumnIndex].takenBy =
-      promoteToKing(piece);
+  if (checkIsKingCandidate(targetSquare)) {
+    promoteToKing(targetSquare);
   }
 
-  return updatedCheckerboard;
+  return newCheckerboard;
 }
 
-export function isPieceMovable(
-  piece: Piece,
-  possibleMoves: MovePath[],
-  turn: Set
-): boolean {
-  return (
-    turn === piece.set && // The turn corresponds to the color of the piece
-    possibleMoves.length > 0 // There are possible moves
-  );
-}
-
-export function cloneCheckerboard(checkerboard: Checkerboard): Checkerboard {
-  return checkerboard.map((row) => row.map((square) => ({ ...square })));
-}
-
-export function getMovePaths(
+export function getImmediatePaths(
   square: TakenSquare,
   checkerboard: Checkerboard,
-  turn: Set
-): MovePath[] {
-  const possiblePaths: MovePath[] = [];
-
-  if (square.takenBy.set !== turn) {
-    return possiblePaths;
-  }
-
-  const immediatePaths: MovePath[] = getImmediatePaths(square, checkerboard);
-  // TODO: Consider rule for accessibility
-  const nonImmediatePaths: MovePath[] = getNonImmediatePaths(
-    square,
-    checkerboard,
-    immediatePaths
-  );
-
-  const paths: MovePath[] = [...immediatePaths, ...nonImmediatePaths];
-
-  return paths;
-}
-
-function getImmediatePaths(
-  square: TakenSquare,
-  checkerboard: Checkerboard
+  gameState: GameState
 ): MovePath[] {
   const immediatePaths: MovePath[] = [];
 
-  const set = square.takenBy.set;
-  const isKing = square.takenBy.isKing;
-  const pieceTypeKey: 0 | 1 = isKing ? 1 : 0;
+  const { type: pieceType } = square.takenBy;
 
   const { rowOffsets, columnOffsets } = selectCalculateMoveOffsetsFunction(
-    pieceTypeKey
-  )(square.position, set);
+    pieceType
+  )(square.position, gameState);
 
   for (const rowIndex of rowOffsets) {
     for (const columnIndex of columnOffsets) {
-      const moves: Move[] = selectGetMovesFunction(pieceTypeKey)(
+      const moves: Move[] = selectGetMovesFunction(pieceType)(
         square,
         { rowIndex, columnIndex },
         checkerboard
@@ -110,36 +93,54 @@ function getImmediatePaths(
   return immediatePaths;
 }
 
-function getNonImmediatePaths(
+export function getNonImmediatePaths(
   square: TakenSquare,
   checkerboard: Checkerboard,
+  gameState: GameState,
   immediatePaths?: MovePath[]
 ): MovePath[] {
-  const paths = immediatePaths ?? getImmediatePaths(square, checkerboard);
+  const paths =
+    immediatePaths ?? getImmediatePaths(square, checkerboard, gameState);
 
   if (paths.length === 0) {
-    return paths;
+    return [];
   }
 
   const capturePaths: MovePath[] = getCapturePaths(paths);
 
   if (capturePaths.length === 0) {
-    return paths;
+    return [];
   }
 
-  const chainedPaths: MovePath[] = getChainedPaths(
-    square,
-    checkerboard,
-    capturePaths
-  );
-
-  return chainedPaths;
+  return getChainedPaths(square, checkerboard, gameState, capturePaths);
 }
 
-function selectGetMovesFunction(pieceTypeKey: 0 | 1 = 0) {
-  const movesFunctions = [getNonKingMoves, getKingMoves];
+export function checkForCaptureMove(
+  square: Square,
+  paths: MovePath[]
+): boolean {
+  return paths.some((path) =>
+    path
+      .filter((move) => move.square.id === square.id)
+      .some((move) => move.isCaptureMove)
+  );
+}
 
-  return movesFunctions[pieceTypeKey];
+function getImmediateMove(square: Square, immediatePaths: MovePath[]): Move {
+  return immediatePaths.flat().find((move) => move.square.id === square.id)!;
+}
+
+function selectGetMovesFunction(
+  pieceType: PieceType
+): (
+  square: TakenSquare,
+  position: Position,
+  checkerboard: Checkerboard,
+  areImmediateMoves?: boolean
+) => Move[] {
+  const getMovesFunctions = [getNonKingMoves, getKingMoves];
+
+  return getMovesFunctions[pieceType];
 }
 
 function getNonKingMoves(
@@ -279,6 +280,7 @@ function getCapturePaths(paths: MovePath[]): MovePath[] {
 function getChainedPaths(
   square: TakenSquare,
   checkerboard: Checkerboard,
+  gameState: GameState,
   capturePaths: MovePath[],
   paths: MovePath[] = []
 ): MovePath[] {
@@ -305,13 +307,15 @@ function getChainedPaths(
       ...lastCaptureMove.square,
       takenBy: {
         set: square.takenBy.set,
+        type: square.takenBy.type,
         isKing: square.takenBy.isKing,
       } as Piece,
     };
 
     const newMoves: Move[] = getMovesVirtually(
       virtualSquare,
-      virtualCheckerboard
+      virtualCheckerboard,
+      gameState
     );
 
     // Since the last element of the path doesn't add any new moves,
@@ -329,24 +333,25 @@ function getChainedPaths(
     }
   }
 
-  return getChainedPaths(square, checkerboard, chainedPaths, paths);
+  return getChainedPaths(square, checkerboard, gameState, chainedPaths, paths);
 }
 
 function getMovesVirtually(
   virtualSquare: TakenSquare,
-  virtualCheckerboard: Checkerboard
+  virtualCheckerboard: Checkerboard,
+  gameState: GameState
 ): Move[] {
   const moves: Move[] = [];
 
-  const pieceTypeKey: 0 | 1 = virtualSquare.takenBy.isKing ? 1 : 0;
+  const { type: pieceType } = virtualSquare.takenBy;
 
   const { rowOffsets, columnOffsets } = selectCalculateMoveOffsetsFunction(
-    pieceTypeKey
-  )(virtualSquare.position, virtualSquare.takenBy.set);
+    pieceType
+  )(virtualSquare.position, gameState);
 
   for (const rowIndex of rowOffsets) {
     for (const columnIndex of columnOffsets) {
-      const newMoves: Move[] = selectGetMovesFunction(pieceTypeKey)(
+      const newMoves: Move[] = selectGetMovesFunction(pieceType)(
         virtualSquare,
         { rowIndex, columnIndex },
         virtualCheckerboard,
@@ -362,43 +367,61 @@ function getMovesVirtually(
   return moves;
 }
 
-function isKingCandidate(square: TakenSquare): boolean {
+export function checkIsKingCandidate(square: TakenSquare): boolean {
   const { rowIndex } = square.position;
-  const isLightSet = square.takenBy.set === Set.Light;
+  const { isKing, set } = square.takenBy;
 
+  if (isKing) {
+    return false;
+  }
+
+  if (checkIsOppositeRow(set, rowIndex)) {
+    return true;
+  }
+
+  return false;
+}
+
+export function checkIsOppositeRow(pieceSet: Set, rowIndex: number): boolean {
   return (
-    (isLightSet && rowIndex === 0) ||
-    (!isLightSet && rowIndex === SQUARES_PER_SIDE - 1)
+    (isLightSet(pieceSet) && isOnFirstRow(rowIndex)) ||
+    (isDarkSet(pieceSet) && isOnLastRow(rowIndex))
   );
 }
 
-function promoteToKing(piece: Piece): Piece {
-  return { ...piece, isKing: true };
+function promoteToKing(square: TakenSquare): void {
+  square.takenBy.type = PieceType.King;
+  square.takenBy.isKing = true;
 }
 
 function isWithinCheckerboardBounds(i: number, j: number): boolean {
   return i >= 0 && i < SQUARES_PER_SIDE && j >= 0 && j < SQUARES_PER_SIDE;
 }
 
+// TODO: Put this in a separate file
 interface Offsets {
   rowOffsets: number[];
   columnOffsets: number[];
 }
 
-function selectCalculateMoveOffsetsFunction(pieceTypeKey: 0 | 1 = 0) {
+function selectCalculateMoveOffsetsFunction(
+  pieceType: PieceType
+): (position: Position, gameState: GameState) => Offsets {
   const calculateMoveOffsetsFunctions = [
     calculateNonKingMoveOffsets,
     calculateKingMoveOffsets,
   ];
 
-  return calculateMoveOffsetsFunctions[pieceTypeKey];
+  return calculateMoveOffsetsFunctions[pieceType];
 }
 
 // TODO: Consider other checkers rules
 function calculateNonKingMoveOffsets(
   { rowIndex, columnIndex }: Position,
-  turn: Set
+  gameState: GameState
 ): Offsets {
+  const { turn } = gameState;
+
   const isLightSet = turn === Set.Light;
 
   const forwardRow = isLightSet ? rowIndex - 1 : rowIndex + 1;
@@ -410,8 +433,10 @@ function calculateNonKingMoveOffsets(
 
 function calculateKingMoveOffsets(
   { rowIndex, columnIndex }: Position,
-  turn: Set
+  gameState: GameState
 ): Offsets {
+  const { turn } = gameState;
+
   const upRow = rowIndex - 1;
   const downRow = rowIndex + 1;
   const leftColumn = columnIndex - 1;
