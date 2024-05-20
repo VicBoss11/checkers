@@ -11,8 +11,9 @@ import { Settings, RuleSet } from '../models/interfaces/game-settings';
 import { Checkerboard, MovePath } from '../models/types';
 import { Player } from '../models/interfaces/game-state';
 import { Set } from '../models/enums';
+import { CheckersHook } from '../models/types/custom-hooks';
 
-function useCheckers() {
+function useCheckers(): CheckersHook {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [rules, setRules] = useState<RuleSet>(DEFAULT_RULES);
   const [player1, setPlayer1] = useState<Player>(DEFAULT_PLAYERS[0]);
