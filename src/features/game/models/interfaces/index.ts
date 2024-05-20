@@ -1,12 +1,12 @@
-import { Set } from '../enums';
+import { PieceType, Set } from '../enums';
 
 export interface Square {
   id: number;
   position: Position;
   location: string;
   color: string;
-  isPlayable: boolean;
   takenBy: Piece | null;
+  isPlayable: boolean;
   isPossibleMove: boolean;
   isImmediateMove: boolean;
 }
@@ -19,6 +19,7 @@ export interface Piece {
   id: number;
   position: Position;
   location: string;
+  type: PieceType;
   set: Set;
   isKing: boolean;
 }

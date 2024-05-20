@@ -1,10 +1,8 @@
-import {
-  DEFAULT_PIECES_LOCATION_TEMPLATE,
-  SQUARES_PER_SIDE,
-} from './constants';
+import { DEFAULT_PIECES_LOCATION_TEMPLATE } from './constants';
 import { Piece, Position, Square } from '../models/interfaces';
 import { Checkerboard, Color } from '../models/types';
-import { Set } from '../models/enums';
+import { PieceType, Set } from '../models/enums';
+import { SQUARES_PER_SIDE } from './constants/checkers';
 
 function setSquareColor(row: number, column: number): Color {
   return (row + column) % 2 === 0 ? 'dark' : 'light';
@@ -40,6 +38,7 @@ export function buildDefaultCheckerboard(): Checkerboard {
               id: pieceId++,
               position,
               location,
+              type: PieceType.NonKing,
               set: defaultTemplateSquareValue === 0 ? Set.Light : Set.Dark,
               isKing: false,
             }
@@ -50,8 +49,8 @@ export function buildDefaultCheckerboard(): Checkerboard {
         position,
         location,
         color,
-        isPlayable,
         takenBy,
+        isPlayable,
         isPossibleMove: false,
         isImmediateMove: false,
       };
