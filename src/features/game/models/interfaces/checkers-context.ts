@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction } from 'react';
-import { Checkerboard, MovePath } from '../types';
-import { Square, TakenSquare } from '.';
-import { Set } from '../enums';
-import { Settings, RuleSet } from './game-settings';
-import { GameState, Player } from './game-state';
+import { PieceSet } from '../enums/checkers';
+import { Checkerboard, MovePath } from '../types/checkers';
+import { Settings, RuleSet } from './checkers-settings';
+import { Player, Square, TakenSquare } from './checkers';
+import { GameState } from './game-state';
 
 export interface CheckersContext {
   gameState: GameState;
@@ -14,9 +14,9 @@ export interface CheckersContext {
     setPlayer2: Dispatch<SetStateAction<Player>>;
     setCheckerboard: Dispatch<SetStateAction<Checkerboard>>;
     setUiCheckerboard: Dispatch<SetStateAction<Checkerboard>>;
-    setTurn: Dispatch<SetStateAction<Set>>;
+    setTurn: Dispatch<SetStateAction<PieceSet>>;
     setIsCaptureTurn: Dispatch<SetStateAction<boolean>>;
-    setWinner: Dispatch<SetStateAction<Set | null>>;
+    setWinner: Dispatch<SetStateAction<PieceSet | null>>;
     setSelectedSquare: Dispatch<SetStateAction<Square | null>>;
     setActiveSquare: Dispatch<SetStateAction<TakenSquare | null>>;
     setCurrentPaths: Dispatch<SetStateAction<MovePath[]>>;

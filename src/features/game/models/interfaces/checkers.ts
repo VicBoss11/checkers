@@ -1,4 +1,12 @@
-import { PieceType, Set } from '../enums';
+import { PieceType, PieceSet } from '../enums/checkers';
+
+export interface Player {
+  name: string;
+  set: PieceSet;
+  isComputer: boolean;
+  elapsedTime: number;
+  remainingTime: number;
+}
 
 export interface Square {
   id: number;
@@ -20,7 +28,7 @@ export interface Piece {
   position: Position;
   location: string;
   type: PieceType;
-  set: Set;
+  set: PieceSet;
   isKing: boolean;
 }
 

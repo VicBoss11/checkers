@@ -1,8 +1,8 @@
-import Game from './features/game/components/game/Game';
+import Checkers from './features/game/components/checkers/Checkers';
 import './App.scss';
 
 function App() {
-  return <Game />;
+  return <Checkers />;
 }
 
 export default App;

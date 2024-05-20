@@ -3,10 +3,10 @@ import {
   DEFAULT_REMAINIG_LIGHT_PIECES,
   DEFAULT_RULES,
   DEFAULT_SETTINGS,
-} from '.';
-import { Set } from '../../models/enums';
-import { CheckersContext } from '../../models/interfaces/game-context';
-import { GameState } from '../../models/interfaces/game-state';
+} from './checkers-default';
+import { PieceSet } from '../models/enums/checkers';
+import { CheckersContext } from '../models/interfaces/checkers-context';
+import { GameState } from '../models/interfaces/game-state';
 
 const DEFAULT_GAME_STATE: GameState = {
   settings: DEFAULT_SETTINGS,
@@ -15,7 +15,7 @@ const DEFAULT_GAME_STATE: GameState = {
   player2: DEFAULT_PLAYERS[1],
   checkerboard: [],
   uiCheckerboard: [],
-  turn: Set.Light,
+  turn: PieceSet.Light,
   isCaptureTurn: false,
   winner: null,
   selectedSquare: null,
@@ -32,7 +32,7 @@ const DEFAULT_SET_FUNCTIONS = {
   setPlayer2: () => DEFAULT_PLAYERS[1],
   setCheckerboard: () => [],
   setUiCheckerboard: () => [],
-  setTurn: () => Set.Light,
+  setTurn: () => PieceSet.Light,
   setIsCaptureTurn: () => false,
   setWinner: () => null,
   setSelectedSquare: () => null,

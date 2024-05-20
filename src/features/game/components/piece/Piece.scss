@@ -1,0 +1,40 @@
+.piece {
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+}
+
+.piece-light {
+  background-color: #fff;
+  color: #000;
+}
+
+.piece-dark {
+  background-color: #000;
+  color: #fff;
+}
+
+.piece--is-king {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background-color: #ffa500;
+    clip-path: polygon(
+      50% 10%,
+      55% 20%,
+      65% 20%,
+      60% 30%,
+      70% 40%,
+      50% 60%,
+      30% 40%,
+      40% 30%,
+      35% 20%,
+      45% 20%
+    );
+  }
+}

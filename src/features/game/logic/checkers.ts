@@ -4,18 +4,18 @@ import {
   isLightSet,
   isOnFirstRow,
   isOnLastRow,
-} from './helpers/checkers.helper';
-import { SQUARES_PER_SIDE } from './helpers/constants/checkers';
-import { PieceType, Set } from './models/enums';
+} from '../helpers/checkers-helper';
+import { SQUARES_PER_SIDE } from '../constants/checkers';
+import { PieceType, PieceSet } from '../models/enums/checkers';
 import {
   Piece,
   Position,
   TakenSquare,
   Move,
   Square,
-} from './models/interfaces';
-import { GameState } from './models/interfaces/game-state';
-import { Checkerboard, MovePath } from './models/types';
+} from '../models/interfaces/checkers';
+import { GameState } from '../models/interfaces/game-state';
+import { Checkerboard, MovePath } from '../models/types/checkers';
 
 export function move(
   fromSquare: TakenSquare,
@@ -382,7 +382,10 @@ export function checkIsKingCandidate(square: TakenSquare): boolean {
   return false;
 }
 
-export function checkIsOppositeRow(pieceSet: Set, rowIndex: number): boolean {
+export function checkIsOppositeRow(
+  pieceSet: PieceSet,
+  rowIndex: number
+): boolean {
   return (
     (isLightSet(pieceSet) && isOnFirstRow(rowIndex)) ||
     (isDarkSet(pieceSet) && isOnLastRow(rowIndex))
@@ -422,7 +425,7 @@ function calculateNonKingMoveOffsets(
 ): Offsets {
   const { turn } = gameState;
 
-  const isLightSet = turn === Set.Light;
+  const isLightSet = turn === PieceSet.Light;
 
   const forwardRow = isLightSet ? rowIndex - 1 : rowIndex + 1;
   const leftColumn = isLightSet ? columnIndex - 1 : columnIndex + 1;

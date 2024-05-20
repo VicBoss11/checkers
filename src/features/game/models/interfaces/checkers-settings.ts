@@ -1,4 +1,4 @@
-import { GameMode } from '../enums';
+import { GameMode } from '../enums/game-state';
 
 export interface Settings {
   gameMode: GameMode;

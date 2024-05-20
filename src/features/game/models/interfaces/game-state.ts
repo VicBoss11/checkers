@@ -1,7 +1,7 @@
-import { Square, TakenSquare } from '.';
-import { Set } from '../enums';
-import { Checkerboard, MovePath } from '../types';
-import { Settings, RuleSet } from './game-settings';
+import { PieceSet } from '../enums/checkers';
+import { Checkerboard, MovePath } from '../types/checkers';
+import { Settings, RuleSet } from './checkers-settings';
+import { Player, Square, TakenSquare } from './checkers';
 
 export interface GameState {
   settings: Settings;
@@ -10,20 +10,12 @@ export interface GameState {
   player2: Player;
   checkerboard: Checkerboard;
   uiCheckerboard: Checkerboard;
-  turn: Set;
+  turn: PieceSet;
   isCaptureTurn: boolean;
-  winner: Set | null;
+  winner: PieceSet | null;
   selectedSquare: Square | null;
   activeSquare: TakenSquare | null;
   currentPaths: MovePath[];
   remainingLights: number;
   remainingDarks: number;
-}
-
-export interface Player {
-  name: string;
-  set: Set;
-  isComputer: boolean;
-  elapsedTime: number;
-  remainingTime: number;
 }

@@ -1,7 +1,7 @@
-import { Set } from '../models/enums';
-import { Square } from '../models/interfaces';
-import { Checkerboard, MovePath } from '../models/types';
-import { FIRST_ROW_INDEX, LAST_ROW_INDEX } from './constants/checkers';
+import { PieceSet } from '../models/enums/checkers';
+import { Square } from '../models/interfaces/checkers';
+import { Checkerboard, MovePath } from '../models/types/checkers';
+import { FIRST_ROW_INDEX, LAST_ROW_INDEX } from '../constants/checkers';
 
 export function cloneCheckerboard(checkerboard: Checkerboard): Checkerboard {
   return checkerboard.map((row) => row.map((square) => ({ ...square })));
@@ -50,17 +50,18 @@ export function getPathsWithoutLastMove(paths: MovePath[]): MovePath[] {
     });
 }
 
-export function isLightSet(set: Set): boolean {
-  return set === Set.Light;
+export function isLightSet(set: PieceSet): boolean {
+  return set === PieceSet.Light;
 }
 
-export function isDarkSet(set: Set): boolean {
-  return set === Set.Dark;
+export function isDarkSet(set: PieceSet): boolean {
+  return set === PieceSet.Dark;
 }
 
 export function isOnFirstRow(rowIndex: number): boolean {
   return rowIndex === FIRST_ROW_INDEX;
 }
+
 export function isOnLastRow(rowIndex: number): boolean {
   return rowIndex === LAST_ROW_INDEX;
 }

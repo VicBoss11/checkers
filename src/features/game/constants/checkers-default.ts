@@ -1,6 +1,7 @@
-import { GameMode, Set } from '../../models/enums';
-import { Settings, RuleSet } from '../../models/interfaces/game-settings';
-import { Player } from '../../models/interfaces/game-state';
+import { PieceSet } from '../models/enums/checkers';
+import { GameMode } from '../models/enums/game-state';
+import { Player } from '../models/interfaces/checkers';
+import { Settings, RuleSet } from '../models/interfaces/checkers-settings';
 
 export const DEFAULT_SETTINGS: Settings = {
   gameMode: GameMode.Local,
@@ -25,14 +26,14 @@ export const DEFAULT_RULES: RuleSet = {
 export const DEFAULT_PLAYERS: Player[] = [
   {
     name: 'Player 1',
-    set: Set.Light,
+    set: PieceSet.Light,
     isComputer: false,
     elapsedTime: 0,
     remainingTime: DEFAULT_RULES.timeLimit,
   },
   {
     name: 'Player 2',
-    set: Set.Dark,
+    set: PieceSet.Dark,
     isComputer: false,
     elapsedTime: 0,
     remainingTime: DEFAULT_RULES.timeLimit,
@@ -52,10 +53,10 @@ export const DEFAULT_PIECES_LOCATION_TEMPLATE = [
 
 export const DEFAULT_REMAINIG_LIGHT_PIECES =
   DEFAULT_PIECES_LOCATION_TEMPLATE.flat().filter(
-    (piece) => piece === Set.Light
+    (piece) => piece === PieceSet.Light
   ).length;
 
 export const DEFAULT_REMAINIG_DARK_PIECES =
   DEFAULT_PIECES_LOCATION_TEMPLATE.flat().filter(
-    (piece) => piece === Set.Dark
+    (piece) => piece === PieceSet.Dark
   ).length;

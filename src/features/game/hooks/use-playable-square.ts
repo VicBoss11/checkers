@@ -1,24 +1,24 @@
 import { useCallback, useContext, useMemo } from 'react';
-import {
-  checkForCaptureMove,
-  getImmediatePaths,
-  getNonImmediatePaths,
-  move,
-} from '../checkers';
-import { GameContext } from '../context/game-context';
+import { CheckersContext } from '../context/checkers-context';
 import {
   getClassName,
   getPathsStartingWithSquare,
   getPathsWithoutLastMove,
   getUpdatedUiCheckerboard,
-} from '../helpers/checkers.helper';
-import { Position, Square, TakenSquare } from '../models/interfaces';
-import { Checkerboard, MovePath } from '../models/types';
+} from '../helpers/checkers-helper';
+import {
+  getImmediatePaths,
+  checkForCaptureMove,
+  move,
+  getNonImmediatePaths,
+} from '../logic/checkers';
 import { PlayableSquareHook } from '../models/interfaces/custom-hooks';
-import { Set } from '../models/enums';
+import { PieceSet } from '../models/enums/checkers';
+import { Square, TakenSquare, Position } from '../models/interfaces/checkers';
+import { MovePath, Checkerboard } from '../models/types/checkers';
 
 function usePlayableSquare(square: Square): PlayableSquareHook {
-  const { gameState, setFunctions } = useContext(GameContext);
+  const { gameState, setFunctions } = useContext(CheckersContext);
 
   const {
     checkerboard,
@@ -101,7 +101,9 @@ function usePlayableSquare(square: Square): PlayableSquareHook {
 
   const finalizeTurn = useCallback(() => {
     setSelectedSquare(null);
-    setTurn((prevTurn) => (prevTurn === Set.Light ? Set.Dark : Set.Light));
+    setTurn((prevTurn) =>
+      prevTurn === PieceSet.Light ? PieceSet.Dark : PieceSet.Light
+    );
     setIsCaptureTurn(false);
   }, [setSelectedSquare, setTurn, setIsCaptureTurn]);
 

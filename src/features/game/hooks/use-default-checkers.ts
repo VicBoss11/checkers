@@ -1,19 +1,18 @@
 import { useState } from 'react';
-import { buildDefaultCheckerboard } from '../helpers/checkerboard.helper';
 import {
   DEFAULT_SETTINGS,
   DEFAULT_RULES,
   DEFAULT_PLAYERS,
   DEFAULT_REMAINIG_LIGHT_PIECES,
-} from '../helpers/constants';
-import { Square, TakenSquare } from '../models/interfaces';
-import { Settings, RuleSet } from '../models/interfaces/game-settings';
-import { Checkerboard, MovePath } from '../models/types';
-import { Player } from '../models/interfaces/game-state';
-import { Set } from '../models/enums';
-import { CheckersHook } from '../models/types/custom-hooks';
+} from '../constants/checkers-default';
+import buildDefaultCheckerboard from '../helpers/checkerboard-helper';
+import { Player, Square, TakenSquare } from '../models/interfaces/checkers';
+import { CheckersContext } from '../models/interfaces/checkers-context';
+import { Settings, RuleSet } from '../models/interfaces/checkers-settings';
+import { PieceSet } from '../models/enums/checkers';
+import { Checkerboard, MovePath } from '../models/types/checkers';
 
-function useCheckers(): CheckersHook {
+function useDefaultCheckers(): CheckersContext {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [rules, setRules] = useState<RuleSet>(DEFAULT_RULES);
   const [player1, setPlayer1] = useState<Player>(DEFAULT_PLAYERS[0]);
@@ -25,9 +24,9 @@ function useCheckers(): CheckersHook {
   const [uiCheckerboard, setUiCheckerboard] =
     useState<Checkerboard>(checkerboard);
 
-  const [turn, setTurn] = useState<Set>(Set.Light);
+  const [turn, setTurn] = useState<PieceSet>(PieceSet.Light);
   const [isCaptureTurn, setIsCaptureTurn] = useState<boolean>(false);
-  const [winner, setWinner] = useState<Set | null>(null);
+  const [winner, setWinner] = useState<PieceSet | null>(null);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [activeSquare, setActiveSquare] = useState<TakenSquare | null>(null);
 
@@ -76,4 +75,4 @@ function useCheckers(): CheckersHook {
   };
 }
 
-export default useCheckers;
+export default useDefaultCheckers;
