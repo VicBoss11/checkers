@@ -7,9 +7,61 @@
 .square {
   width: 75px;
   height: 75px;
-  border: 1px solid #926d55;
   display: grid;
   place-items: center;
+}
+
+.square--is-movable {
+  position: relative;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 95%;
+    height: 95%;
+    border-radius: 50%;
+    border: 4px dashed #70b9e9;
+    animation: rotateBorder 5s linear infinite;
+  }
+}
+
+.square--is-active {
+  position: relative;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 95%;
+    height: 95%;
+    border-radius: 50%;
+    border: 4px dashed #ece362;
+    animation: rotateBorder 5s linear reverse infinite;
+  }
+}
+
+.square--is-possible-move,
+.square--is-immediate-move {
+  position: relative;
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #70b9e9;
+    border-radius: 12px;
+  }
+}
+
+.square--is-possible-move::before {
+  opacity: 0.3;
+}
+
+.square--is-immediate-move::before {
+  opacity: 0.6;
 }
 
 .square-light {
@@ -35,4 +87,38 @@
 .piece-dark {
   background-color: #000;
   color: #fff;
+}
+
+.piece--is-king {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    background-color: #ffa500;
+    clip-path: polygon(
+      50% 10%,
+      55% 20%,
+      65% 20%,
+      60% 30%,
+      70% 40%,
+      50% 60%,
+      30% 40%,
+      40% 30%,
+      35% 20%,
+      45% 20%
+    );
+  }
+}
+
+@keyframes rotateBorder {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
