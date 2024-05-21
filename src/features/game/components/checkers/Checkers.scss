@@ -1,0 +1,45 @@
+.checkers--is-local-mode {
+  &.checkers--is-light-turn:not(.checkers--is-initial-turn) {
+    .checkerboard-container {
+      transform: rotate(0deg);
+      animation: rotate-dark-to-light 1.25s ease-in-out;
+    }
+  }
+
+  &.checkers--is-dark-turn:not(.checkers--is-initial-turn) {
+    .checkerboard-container {
+      transform: rotate(180deg);
+      animation: rotate-light-to-dark 1.25s ease-in-out;
+    }
+  }
+
+  @keyframes rotate-light-to-dark {
+    0% {
+      transform: scale(1) rotate(0deg);
+    }
+    33% {
+      transform: scale(1.2) rotate(0deg);
+    }
+    66% {
+      transform: scale(1.2) rotate(180deg);
+    }
+    100% {
+      transform: scale(1) rotate(180deg);
+    }
+  }
+
+  @keyframes rotate-dark-to-light {
+    0% {
+      transform: scale(1) rotate(180deg);
+    }
+    33% {
+      transform: scale(1.2) rotate(180deg);
+    }
+    66% {
+      transform: scale(1.2) rotate(0deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
+  }
+}
