@@ -1,3 +1,8 @@
+export interface CheckersHook {
+  className: string;
+  showCheckerboardGuides: boolean;
+}
+
 export interface PlayableSquareHook {
   className: string;
   squareStates: {
