@@ -1,0 +1,77 @@
+.checkerboard-guides {
+  display: grid;
+  background-color: #131211;
+}
+
+.checkers--is-local-mode {
+  .checkerboard-guides {
+    grid-template-areas:
+      '. guide-top .'
+      'guide-left checkerboard guide-right'
+      '. guide-bottom .';
+  }
+}
+
+.checkerboard-guides {
+  grid-template-areas:
+    '. . .'
+    'guide-left checkerboard .'
+    '. guide-bottom .';
+}
+
+.guide {
+  display: flex;
+
+  span {
+    display: grid;
+    place-content: center;
+  }
+}
+
+.vertical-guide {
+  flex-direction: column;
+
+  span {
+    width: 40px;
+    height: 75px;
+  }
+}
+
+.horizontal-guide {
+  flex-direction: row;
+
+  span {
+    width: 75px;
+    height: 40px;
+  }
+}
+
+.reversed-guide span {
+  transform: rotate(180deg);
+}
+
+.vertical-guide {
+  grid-area: guide-left;
+}
+
+.horizontal-guide {
+  grid-area: guide-bottom;
+}
+
+.vertical-guide.reversed-guide {
+  grid-area: guide-right;
+}
+
+.horizontal-guide.reversed-guide {
+  grid-area: guide-top;
+}
+
+.checkerboard {
+  grid-area: checkerboard;
+}
+
+@media (prefers-color-scheme: light) {
+  .checkerboard-guides {
+    color: rgba(255, 255, 255, 0.87);
+  }
+}
