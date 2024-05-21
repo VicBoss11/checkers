@@ -1,14 +1,35 @@
 import { ReactElement } from 'react';
-import { CheckersProvider } from '../../context/checkers-context';
+import useCheckers from '../../hooks/use-checkers';
+import CheckerboardGuides from '../checkerboard-guides/CheckerboardGuides';
 import Checkerboard from '../checkerboard/Checkerboard';
 import './Checkers.scss';
 
 function Checkers(): ReactElement {
+  const { className, showCheckerboardGuides } = useCheckers();
+
   return (
-    <CheckersProvider>
-      <Checkerboard />
-    </CheckersProvider>
+    <div className={className}>
+      <div className="checkerboard-container">
+        {showCheckerboardGuides ? (
+          <CheckerboardWithGuides />
+        ) : (
+          <CheckerboardWithoutGuides />
+        )}
+      </div>
+    </div>
   );
+}
+
+function CheckerboardWithGuides(): ReactElement {
+  return (
+    <CheckerboardGuides>
+      <Checkerboard />
+    </CheckerboardGuides>
+  );
+}
+
+function CheckerboardWithoutGuides(): ReactElement {
+  return <Checkerboard />;
 }
 
 export default Checkers;
