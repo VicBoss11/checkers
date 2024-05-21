@@ -8,7 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // TODO: Set to false
   showCompletePaths: true,
   drawRequestEnabled: true,
-  showCheckerboardCoordinates: true,
+  showCheckerboardGuides: true,
   deepMode: false,
 };
 

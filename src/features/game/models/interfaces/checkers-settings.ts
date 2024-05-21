@@ -4,7 +4,7 @@ export interface Settings {
   gameMode: GameMode;
   showCompletePaths: boolean;
   drawRequestEnabled: boolean;
-  showCheckerboardCoordinates: boolean;
+  showCheckerboardGuides: boolean;
   deepMode: boolean;
 }
 
