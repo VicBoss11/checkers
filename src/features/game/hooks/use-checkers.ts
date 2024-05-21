@@ -5,7 +5,7 @@ import { GameMode } from '../models/enums/game-state';
 import { CheckersHook } from '../models/interfaces/custom-hooks';
 
 function useCheckers(): CheckersHook {
-  const isFirstRender = useRef<boolean>(true);
+  const isInitialMount = useRef<boolean>(true);
   const isInitialTurn = useRef<boolean>(true);
   const { gameState } = useContext(CheckersContext);
 
@@ -34,24 +34,23 @@ function useCheckers(): CheckersHook {
     ])
   );
 
-  // Effect that, when the turn changes, sets a flag
-  // indicating it's no longer the initial turn
+  // Effect that, when the turn changes and it is not the
+  // first mount, sets a flag indicating it's no longer
+  // the initial turn
   useEffect(() => {
-    if (!isFirstRender.current) {
+    if (!isInitialMount.current) {
       isInitialTurn.current = false;
     }
   }, [turn]);
   // Effect that sets a flag indicating it's no longer the
-  // first render when the component mounts
+  // first mount when the component mounts
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-    }
+    isInitialMount.current = false;
   }, []);
   // Effect that changes the class name with each turn change,
-  // except for the initial render and the initial turn
+  // except for the initial mount and the initial turn
   useEffect(() => {
-    if (!isFirstRender.current && !isInitialTurn.current) {
+    if (!isInitialMount.current && !isInitialTurn.current) {
       setClassName(
         getClassName(['checkers', isLocalGameModeClassName, turnClassName])
       );
