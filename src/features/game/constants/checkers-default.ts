@@ -28,15 +28,15 @@ export const DEFAULT_PLAYERS: Player[] = [
     name: 'Player 1',
     set: PieceSet.Light,
     isComputer: false,
-    elapsedTime: 0,
-    remainingTime: DEFAULT_RULES.timeLimit,
+    timeElapsed: 0,
+    timeRemaining: DEFAULT_RULES.timeLimit,
   },
   {
     name: 'Player 2',
     set: PieceSet.Dark,
     isComputer: false,
-    elapsedTime: 0,
-    remainingTime: DEFAULT_RULES.timeLimit,
+    timeElapsed: 0,
+    timeRemaining: DEFAULT_RULES.timeLimit,
   },
 ];
 

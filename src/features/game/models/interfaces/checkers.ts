@@ -4,8 +4,8 @@ export interface Player {
   name: string;
   set: PieceSet;
   isComputer: boolean;
-  elapsedTime: number;
-  remainingTime: number;
+  timeElapsed: number;
+  timeRemaining: number;
 }
 
 export interface Square {
