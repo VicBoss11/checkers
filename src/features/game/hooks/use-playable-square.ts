@@ -1,9 +1,9 @@
-import { useCallback, useContext, useMemo } from 'react';
+import { useRef, useContext, useMemo, useEffect, useCallback } from 'react';
 import { CheckersContext } from '../context/checkers-context';
 import {
   getClassName,
-  getPathsStartingWithSquare,
   getPathsWithoutLastMove,
+  getPathsStartingWithSquare,
   getUpdatedUiCheckerboard,
 } from '../helpers/checkers-helper';
 import {
@@ -12,12 +12,14 @@ import {
   move,
   getNonImmediatePaths,
 } from '../logic/checkers';
-import { PlayableSquareHook } from '../models/interfaces/custom-hooks';
 import { PieceSet } from '../models/enums/checkers';
 import { Square, TakenSquare, Position } from '../models/interfaces/checkers';
+import { PlayableSquareHook } from '../models/interfaces/custom-hooks';
 import { MovePath, Checkerboard } from '../models/types/checkers';
 
 function usePlayableSquare(square: Square): PlayableSquareHook {
+  const squareRef = useRef<HTMLDivElement>(null);
+
   const { gameState, setFunctions } = useContext(CheckersContext);
 
   const {
@@ -98,6 +100,12 @@ function usePlayableSquare(square: Square): PlayableSquareHook {
       isImmediateMoveClassName,
     ]);
   }, [square.color, isMovable, isActive, isPossibleMove, isImmediateMove]);
+
+  useEffect(() => {
+    if (isCaptureTurn && isMovable && !isActive) {
+      squareRef.current!.click();
+    }
+  }, [isActive, isCaptureTurn, isMovable]);
 
   const finalizeTurn = useCallback(() => {
     setSelectedSquare(null);
@@ -198,12 +206,12 @@ function usePlayableSquare(square: Square): PlayableSquareHook {
   return {
     className,
     squareStates: {
-      isSelected,
       isActive,
       isPossibleMove,
       isImmediateMove,
       isClickable,
     },
+    squareRef,
     makeMove,
     highlightPaths,
     updateUiCheckerboard,

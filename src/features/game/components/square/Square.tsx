@@ -1,6 +1,6 @@
 import { MouseEvent, ReactElement } from 'react';
-import { Square as ISquare } from '../../models/interfaces/checkers';
 import usePlayableSquare from '../../hooks/use-playable-square';
+import { Square as ISquare } from '../../models/interfaces/checkers';
 import Piece from '../piece/Piece';
 import './Square.scss';
 
@@ -14,6 +14,7 @@ function Square({ square }: { square: ISquare }): ReactElement {
 
 function PlayableSquare({ square }: { square: ISquare }): ReactElement {
   const {
+    squareRef,
     className,
     squareStates,
     makeMove,
@@ -53,6 +54,7 @@ function PlayableSquare({ square }: { square: ISquare }): ReactElement {
   return (
     <div
       className={className}
+      ref={squareRef}
       onClick={isClickable ? handleSquareClick : undefined}
     >
       {square.takenBy && <Piece piece={square.takenBy} />}
