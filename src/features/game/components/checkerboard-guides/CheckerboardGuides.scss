@@ -1,6 +1,8 @@
 .checkerboard-guides {
   display: grid;
+
   background-color: #131211;
+  border-radius: 8px;
 }
 
 .checkers--is-local-mode {
