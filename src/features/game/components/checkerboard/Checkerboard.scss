@@ -1,5 +1,8 @@
 .checkerboard {
   display: grid;
-  width: fit-content;
   grid-template-columns: repeat(8, 1fr);
+
+  width: fit-content;
+  border-radius: 8px;
+  overflow: hidden;
 }
