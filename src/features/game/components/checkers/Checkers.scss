@@ -1,15 +1,81 @@
+.checkerboard-shadow {
+  position: relative;
+  border-radius: 8px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
 .checkers--is-local-mode {
+  --animation-time: 1.25s;
+
   &.checkers--is-light-turn:not(.checkers--is-initial-turn) {
+    .checkerboard-shadow::before {
+      animation: hide-on-rotate-dark-to-light var(--animation-time) ease-in-out;
+    }
+
     .checkerboard-container {
       transform: rotate(0deg);
-      animation: rotate-dark-to-light 1.25s ease-in-out;
+      animation: rotate-dark-to-light var(--animation-time) ease-in-out;
     }
   }
 
   &.checkers--is-dark-turn:not(.checkers--is-initial-turn) {
+    .checkerboard-shadow::before {
+      animation: hide-on-rotate-light-to-dark var(--animation-time) ease-in-out;
+    }
+
     .checkerboard-container {
       transform: rotate(180deg);
-      animation: rotate-light-to-dark 1.25s ease-in-out;
+      animation: rotate-light-to-dark var(--animation-time) ease-in-out;
+    }
+  }
+
+  @keyframes hide-on-rotate-dark-to-light {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    20% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    80% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes hide-on-rotate-light-to-dark {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    20% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    80% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
     }
   }
 

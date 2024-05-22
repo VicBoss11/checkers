@@ -9,12 +9,14 @@ function Checkers(): ReactElement {
 
   return (
     <div className={className}>
-      <div className="checkerboard-container">
-        {showCheckerboardGuides ? (
-          <CheckerboardWithGuides />
-        ) : (
-          <CheckerboardWithoutGuides />
-        )}
+      <div className="checkerboard-shadow">
+        <div className="checkerboard-container">
+          {showCheckerboardGuides ? (
+            <CheckerboardWithGuides />
+          ) : (
+            <CheckerboardWithoutGuides />
+          )}
+        </div>
       </div>
     </div>
   );
