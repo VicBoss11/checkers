@@ -1,6 +1,8 @@
 .checkerboard-shadow {
   position: relative;
-  border-radius: 8px;
+
+  width: fit-content;
+  border-radius: var(--border-radius-medium);
 
   &::before {
     content: '';

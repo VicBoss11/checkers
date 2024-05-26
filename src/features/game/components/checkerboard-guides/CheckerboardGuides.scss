@@ -1,8 +1,9 @@
 .checkerboard-guides {
   display: grid;
 
-  background-color: #131211;
-  border-radius: 8px;
+  color: var(--color-tertiary);
+  background-color: var(--color-quaternary);
+  border-radius: var(--border-radius-medium);
 }
 
 .checkers--is-local-mode {
@@ -19,10 +20,13 @@
     '. . .'
     'guide-left checkerboard .'
     '. guide-bottom .';
+  grid-template-columns: auto auto auto;
+  width: fit-content;
 }
 
 .guide {
   display: flex;
+  width: fit-content;
 
   span {
     display: grid;
@@ -70,10 +74,4 @@
 
 .checkerboard {
   grid-area: checkerboard;
-}
-
-@media (prefers-color-scheme: light) {
-  .checkerboard-guides {
-    color: rgba(255, 255, 255, 0.87);
-  }
 }
