@@ -2,16 +2,18 @@
   width: 80%;
   height: 80%;
   border-radius: 50%;
-}
 
-.piece-light {
-  background-color: #fff;
-  color: #000;
-}
+  &.piece-light {
+    background-color: #fff;
+    color: #000;
+  }
 
-.piece-dark {
-  background-color: #000;
-  color: #fff;
+  &.piece-dark {
+    background-color: #000;
+    color: #fff;
+
+    transform: rotate(180deg);
+  }
 }
 
 .piece--is-king {
