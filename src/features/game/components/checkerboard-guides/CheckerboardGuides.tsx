@@ -35,7 +35,10 @@ function NumbersGuide({
   isVertical?: boolean;
   isReversed?: boolean;
 }): ReactElement {
-  const numbers = Array.from({ length: SQUARES_PER_SIDE }, (_, i) => i + 1);
+  const numbers = Array.from(
+    { length: SQUARES_PER_SIDE },
+    (_, i) => i + 1
+  ).reverse();
 
   return (
     <div className={getGuideClassName(isVertical, isReversed)}>
