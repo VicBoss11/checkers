@@ -40,7 +40,7 @@
   position: relative;
   cursor: pointer;
 
-  &::before {
+  &::after {
     content: '';
     position: absolute;
     width: 100%;
@@ -50,11 +50,11 @@
   }
 }
 
-.square--is-possible-move::before {
+.square--is-possible-move::after {
   opacity: 0.3;
 }
 
-.square--is-immediate-move::before {
+.square--is-immediate-move::after {
   opacity: 0.6;
 }
 
