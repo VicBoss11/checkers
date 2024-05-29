@@ -1,5 +1,6 @@
 import {
   Dispatch,
+  Fragment,
   SetStateAction,
   useCallback,
   useContext,
@@ -10,6 +11,7 @@ import { CheckersContext } from '../../context/checkers-context';
 import { isLightSet } from '../../helpers/checkers-helper';
 import { PieceSet } from '@features/game/models/enums/checkers';
 import './GameStatus.scss';
+import { IconCaretRightFilled } from '@tabler/icons-react';
 
 function GameSatus() {
   const { gameState, setFunctions } = useContext(CheckersContext);
@@ -19,6 +21,7 @@ function GameSatus() {
     player2,
     checkerboard,
     activeSquare,
+    currentPaths,
     lightsRemaining,
     darksRemaining,
     lightKingsCount,
@@ -154,6 +157,32 @@ function GameSatus() {
             </div>
           </div>
         </div>
+
+        <details
+          className="game-status-item-accordion game-status-possible-moves"
+          open
+        >
+          <summary className="game-status-label">Movimientos posibles</summary>
+          <div className="game-status-content">
+            {currentPaths.map((path, index) => (
+              <div key={index} className="game-status-move">
+                <span className="game-status-move-label">{index + 1}</span>
+
+                <span className="game-status-move-value">
+                  {path.map((move, moveIndex) => (
+                    <Fragment key={moveIndex}>
+                      <span>{move.square.location}</span>
+
+                      {moveIndex < path.length - 1 && (
+                        <IconCaretRightFilled size={14} stroke={2} />
+                      )}
+                    </Fragment>
+                  ))}
+                </span>
+              </div>
+            ))}
+          </div>
+        </details>
       </main>
     </aside>
   );
