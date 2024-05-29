@@ -188,7 +188,11 @@ function usePlayableSquare(square: Square): PlayableSquareHook {
 
     setUiCheckerboard(() => {
       const paths = [
-        ...immediatePaths,
+        // From the immediatePaths, we only keep the moves that are
+        // not capture moves because the capture moves need to be
+        // chained with the getNonImmediatePaths function, thus avoiding
+        // repeated moves
+        ...immediatePaths.filter((path) => !path[0].isCaptureMove),
         ...getNonImmediatePaths(
           square as TakenSquare,
           checkerboard,
