@@ -1,0 +1,32 @@
+.play {
+  margin: 0 auto;
+}
+
+.game-container {
+  display: grid;
+  grid-template-areas:
+    '. turn-info .'
+    'game-status checkers .';
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
+
+  margin: var(--spacing-large) 0;
+
+  .checkers {
+    grid-area: checkers;
+
+    margin: 0 auto;
+  }
+
+  .turn-info {
+    grid-area: turn-info;
+
+    margin: 0 auto;
+  }
+
+  .game-status {
+    grid-area: game-status;
+
+    margin-left: auto;
+  }
+}
