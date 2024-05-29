@@ -1,4 +1,4 @@
-import { ReactElement, useContext } from 'react';
+import { ReactElement, useContext, useEffect } from 'react';
 import { SQUARES_PER_SIDE } from '../../constants/checkers';
 import { CheckersContext } from '../../context/checkers-context';
 import { Square as ISquare } from '../../models/interfaces/checkers';
@@ -8,9 +8,9 @@ import './Checkerboard.scss';
 function Checkerboard(): ReactElement {
   const { gameState, setFunctions } = useContext(CheckersContext);
 
-  const { checkerboard, uiCheckerboard, isCaptureTurn, activeSquare } =
+  const { checkerboard, uiCheckerboard, turn, isCaptureTurn, activeSquare } =
     gameState;
-  const { setUiCheckerboard, setActiveSquare } = setFunctions;
+  const { setUiCheckerboard, setActiveSquare, setCurrentPaths } = setFunctions;
 
   const squares: ISquare[] = [];
 
@@ -20,6 +20,10 @@ function Checkerboard(): ReactElement {
     }
   }
 
+  useEffect(() => {
+    setCurrentPaths([]);
+  }, [turn, setCurrentPaths]);
+
   const handleOutsideClick = (): void => {
     if (isCaptureTurn) {
       return;
@@ -28,6 +32,7 @@ function Checkerboard(): ReactElement {
     if (activeSquare) {
       setUiCheckerboard(checkerboard);
       setActiveSquare(null);
+      setCurrentPaths([]);
     }
   };
 
