@@ -20,7 +20,9 @@ export interface CheckersContext {
     setSelectedSquare: Dispatch<SetStateAction<Square | null>>;
     setActiveSquare: Dispatch<SetStateAction<TakenSquare | null>>;
     setCurrentPaths: Dispatch<SetStateAction<MovePath[]>>;
-    setRemainingLights: Dispatch<SetStateAction<number>>;
-    setRemainingDarks: Dispatch<SetStateAction<number>>;
+    setLightsRemaining: Dispatch<SetStateAction<number>>;
+    setDarksRemaining: Dispatch<SetStateAction<number>>;
+    setLightKingsCount: Dispatch<SetStateAction<number>>;
+    setDarkKingsCount: Dispatch<SetStateAction<number>>;
   };
 }

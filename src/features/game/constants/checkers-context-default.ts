@@ -1,6 +1,6 @@
 import {
   DEFAULT_PLAYERS,
-  DEFAULT_REMAINIG_LIGHT_PIECES,
+  DEFAULT_LIGHT_PIECES_REMAINIG,
   DEFAULT_RULES,
   DEFAULT_SETTINGS,
 } from './checkers-default';
@@ -21,8 +21,10 @@ const DEFAULT_GAME_STATE: GameState = {
   selectedSquare: null,
   activeSquare: null,
   currentPaths: [],
-  remainingLights: DEFAULT_REMAINIG_LIGHT_PIECES,
-  remainingDarks: DEFAULT_REMAINIG_LIGHT_PIECES,
+  lightsRemaining: DEFAULT_LIGHT_PIECES_REMAINIG,
+  darksRemaining: DEFAULT_LIGHT_PIECES_REMAINIG,
+  lightKingsCount: 0,
+  darkKingsCount: 0,
 };
 
 const DEFAULT_SET_FUNCTIONS = {
@@ -38,8 +40,10 @@ const DEFAULT_SET_FUNCTIONS = {
   setSelectedSquare: () => null,
   setActiveSquare: () => null,
   setCurrentPaths: () => [],
-  setRemainingLights: () => DEFAULT_REMAINIG_LIGHT_PIECES,
-  setRemainingDarks: () => DEFAULT_REMAINIG_LIGHT_PIECES,
+  setLightsRemaining: () => DEFAULT_LIGHT_PIECES_REMAINIG,
+  setDarksRemaining: () => DEFAULT_LIGHT_PIECES_REMAINIG,
+  setLightKingsCount: () => 0,
+  setDarkKingsCount: () => 0,
 };
 
 export const DEFAULT_CHECKERS_CONTEXT: CheckersContext = {

@@ -51,12 +51,12 @@ export const DEFAULT_PIECES_LOCATION_TEMPLATE = [
   [null, 1, null, 1, null, 1, null, 1],
 ];
 
-export const DEFAULT_REMAINIG_LIGHT_PIECES =
+export const DEFAULT_LIGHT_PIECES_REMAINIG =
   DEFAULT_PIECES_LOCATION_TEMPLATE.flat().filter(
     (piece) => piece === PieceSet.Light
   ).length;
 
-export const DEFAULT_REMAINIG_DARK_PIECES =
+export const DEFAULT_DARK_PIECES_REMAINIG =
   DEFAULT_PIECES_LOCATION_TEMPLATE.flat().filter(
     (piece) => piece === PieceSet.Dark
   ).length;

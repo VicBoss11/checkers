@@ -16,6 +16,8 @@ export interface GameState {
   selectedSquare: Square | null;
   activeSquare: TakenSquare | null;
   currentPaths: MovePath[];
-  remainingLights: number;
-  remainingDarks: number;
+  lightsRemaining: number;
+  darksRemaining: number;
+  lightKingsCount: number;
+  darkKingsCount: number;
 }

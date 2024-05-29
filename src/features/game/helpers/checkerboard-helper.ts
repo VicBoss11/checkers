@@ -4,11 +4,11 @@ import { Checkerboard, SquareColor } from '../models/types/checkers';
 import { PieceType, PieceSet } from '../models/enums/checkers';
 import { SQUARES_PER_SIDE } from '../constants/checkers';
 
-function setSquareColor(row: number, column: number): SquareColor {
+export function setSquareColor(row: number, column: number): SquareColor {
   return (row + column) % 2 === 0 ? 'dark' : 'light';
 }
 
-function buildDefaultCheckerboard(): Checkerboard {
+export function buildDefaultCheckerboard(): Checkerboard {
   const checkerboard: Checkerboard = [];
 
   let squareId = 1;
@@ -65,5 +65,3 @@ function buildDefaultCheckerboard(): Checkerboard {
 
   return checkerboard.reverse();
 }
-
-export default buildDefaultCheckerboard;

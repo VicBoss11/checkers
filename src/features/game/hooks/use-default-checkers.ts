@@ -3,9 +3,9 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_RULES,
   DEFAULT_PLAYERS,
-  DEFAULT_REMAINIG_LIGHT_PIECES,
+  DEFAULT_LIGHT_PIECES_REMAINIG,
 } from '../constants/checkers-default';
-import buildDefaultCheckerboard from '../helpers/checkerboard-helper';
+import { buildDefaultCheckerboard } from '../helpers/checkerboard-helper';
 import { Player, Square, TakenSquare } from '../models/interfaces/checkers';
 import { CheckersContext } from '../models/interfaces/checkers-context';
 import { Settings, RuleSet } from '../models/interfaces/checkers-settings';
@@ -31,13 +31,16 @@ function useDefaultCheckers(): CheckersContext {
   const [activeSquare, setActiveSquare] = useState<TakenSquare | null>(null);
 
   const [currentPaths, setCurrentPaths] = useState<MovePath[]>([]);
-  const [remainingLights, setRemainingLights] = useState<number>(
-    DEFAULT_REMAINIG_LIGHT_PIECES
+  const [lightsRemaining, setLightsRemaining] = useState<number>(
+    DEFAULT_LIGHT_PIECES_REMAINIG
   );
 
-  const [remainingDarks, setRemainingDarks] = useState<number>(
-    DEFAULT_REMAINIG_LIGHT_PIECES
+  const [darksRemaining, setDarksRemaining] = useState<number>(
+    DEFAULT_LIGHT_PIECES_REMAINIG
   );
+
+  const [lightKingsCount, setLightKingsCount] = useState<number>(0);
+  const [darkKingsCount, setDarkKingsCount] = useState<number>(0);
 
   return {
     gameState: {
@@ -53,8 +56,10 @@ function useDefaultCheckers(): CheckersContext {
       selectedSquare,
       activeSquare,
       currentPaths,
-      remainingLights,
-      remainingDarks,
+      lightsRemaining,
+      darksRemaining,
+      lightKingsCount,
+      darkKingsCount,
     },
     setFunctions: {
       setSettings,
@@ -69,8 +74,10 @@ function useDefaultCheckers(): CheckersContext {
       setSelectedSquare,
       setActiveSquare,
       setCurrentPaths,
-      setRemainingLights,
-      setRemainingDarks,
+      setLightsRemaining,
+      setDarksRemaining,
+      setLightKingsCount,
+      setDarkKingsCount,
     },
   };
 }
