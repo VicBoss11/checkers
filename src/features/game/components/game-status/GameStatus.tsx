@@ -1,6 +1,5 @@
 import {
   Dispatch,
-  Fragment,
   SetStateAction,
   useCallback,
   useContext,
@@ -11,7 +10,6 @@ import { CheckersContext } from '../../context/checkers-context';
 import { isLightSet } from '../../helpers/checkers-helper';
 import { PieceSet } from '@features/game/models/enums/checkers';
 import './GameStatus.scss';
-import { IconCaretRightFilled } from '@tabler/icons-react';
 
 function GameSatus() {
   const { gameState, setFunctions } = useContext(CheckersContext);
@@ -21,7 +19,6 @@ function GameSatus() {
     player2,
     checkerboard,
     activeSquare,
-    currentPaths,
     lightsRemaining,
     darksRemaining,
     lightKingsCount,
@@ -100,36 +97,37 @@ function GameSatus() {
       <header className="game-status-title">Estado actual</header>
 
       <main className="game-status-info">
-        <div className="game-status-item game-status-time-elapsed">
+        <section className="game-status-item game-status-time-elapsed">
           <span className="game-status-label">Tiempo: </span>
           <span className="game-status-value">{timeElapsed}</span>
-        </div>
+        </section>
 
-        <div
+        <section
           className={`game-status-item game-status-player ${playerOneSetClassName}`}
         >
           <span className="game-status-label">Jugador 1:</span>
           <span className="game-status-value">{player1.name}</span>
-        </div>
+        </section>
 
-        <div
+        <section
           className={`game-status-item game-status-player ${playerTwoSetClassName}`}
         >
           <span className="game-status-label">Jugador 2:</span>
           <span className="game-status-value">{player2.name}</span>
-        </div>
+        </section>
 
-        <div className="game-status-item game-status-active-piece">
-          <span className="game-status-label">Pieza activa:</span>{' '}
+        <section className="game-status-item game-status-active-piece">
+          <span className="game-status-label">Pieza activa:</span>
+
           <span className="game-status-value">
             {activeSquare !== null ? activeSquare.location : 'ninguna'}
           </span>
-        </div>
+        </section>
 
-        <div className="game-status-item-multiple game-status-lights-info">
-          <div className="game-status-label">Información de blancas:</div>
+        <section className="game-status-item-multiple game-status-lights-info">
+          <header className="game-status-label">Información de blancas:</header>
 
-          <div className="game-status-value-multiple">
+          <article className="game-status-value-multiple">
             <div className="game-status-subitem game-status-pieces-remaining">
               <span className="game-status-label">Piezas restantes:</span>
               <span className="game-status-value">{lightsRemaining}</span>
@@ -139,13 +137,13 @@ function GameSatus() {
               <span className="game-status-label">Damas:</span>
               <span className="game-status-value">{lightKingsCount}</span>
             </div>
-          </div>
-        </div>
+          </article>
+        </section>
 
-        <div className="game-status-item-multiple game-status-darks-info">
-          <div className="game-status-label">Información de negras:</div>
+        <section className="game-status-item-multiple game-status-darks-info">
+          <header className="game-status-label">Información de negras:</header>
 
-          <div className="game-status-value-multiple">
+          <article className="game-status-value-multiple">
             <div className="game-status-subitem game-status-pieces-remaining">
               <span className="game-status-label">Piezas restantes:</span>
               <span className="game-status-value">{darksRemaining}</span>
@@ -155,34 +153,8 @@ function GameSatus() {
               <span className="game-status-label">Damas:</span>
               <span className="game-status-value">{darkKingsCount}</span>
             </div>
-          </div>
-        </div>
-
-        <details
-          className="game-status-item-accordion game-status-possible-moves"
-          open
-        >
-          <summary className="game-status-label">Movimientos posibles</summary>
-          <div className="game-status-content">
-            {currentPaths.map((path, index) => (
-              <div key={index} className="game-status-move">
-                <span className="game-status-move-label">{index + 1}</span>
-
-                <span className="game-status-move-value">
-                  {path.map((move, moveIndex) => (
-                    <Fragment key={moveIndex}>
-                      <span>{move.square.location}</span>
-
-                      {moveIndex < path.length - 1 && (
-                        <IconCaretRightFilled size={14} stroke={2} />
-                      )}
-                    </Fragment>
-                  ))}
-                </span>
-              </div>
-            ))}
-          </div>
-        </details>
+          </article>
+        </section>
       </main>
     </aside>
   );

@@ -78,65 +78,6 @@
   margin-left: var(--spacing-medium);
 }
 
-.game-status-item-accordion .game-status-label {
-  cursor: pointer;
-
-  user-select: none;
-}
-
-.game-status-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-small);
-
-  width: 100%;
-  max-width: 221.67px;
-  min-height: calc(1.5rem + var(--spacing-small) * 2);
-  height: fit-content;
-  max-height: 200px;
-  margin: var(--spacing-small) 0;
-  padding: var(--spacing-small);
-  overflow: auto;
-
-  border-radius: var(--border-radius-medium);
-  background-color: #242424e3;
-  color: var(--color-tertiary);
-}
-
-.game-status-content-label {
-  text-align: center;
-  font-size: var(--font-size-small);
-}
-
-.game-status-move {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-small);
-
-  font-size: calc(var(--font-size-small));
-}
-
-.game-status-move-label {
-  --size: 1.15rem;
-
-  display: grid;
-  place-content: center;
-
-  min-width: var(--size);
-  min-height: var(--size);
-  max-width: var(--size);
-  max-height: var(--size);
-
-  border-radius: 50%;
-  background-color: var(--color-tertiary);
-  color: #242424e3;
-}
-
-.game-status-move-value {
-  display: flex;
-  align-items: center;
-}
-
 @media (prefers-color-scheme: dark) {
   .game-status {
     background-color: var(--color-quaternary);
