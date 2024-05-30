@@ -96,7 +96,7 @@ function GameSatus() {
     <aside className="game-status">
       <header className="game-status-title">Estado actual</header>
 
-      <main className="game-status-info">
+      <section className="game-status-info">
         <section className="game-status-item game-status-time-elapsed">
           <span className="game-status-label">Tiempo: </span>
           <span className="game-status-value">{timeElapsed}</span>
@@ -155,7 +155,7 @@ function GameSatus() {
             </div>
           </article>
         </section>
-      </main>
+      </section>
     </aside>
   );
 }
