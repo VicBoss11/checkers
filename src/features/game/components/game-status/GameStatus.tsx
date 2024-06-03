@@ -93,10 +93,10 @@ function GameSatus() {
   const timeElapsed = new Date(timer * 1000).toISOString().slice(11, 19);
 
   return (
-    <aside className="game-status">
+    <section className="game-status">
       <header className="game-status-title">Estado actual</header>
 
-      <section className="game-status-info">
+      <article className="game-status-info">
         <section className="game-status-item game-status-time-elapsed">
           <span className="game-status-label">Tiempo: </span>
           <span className="game-status-value">{timeElapsed}</span>
@@ -155,8 +155,8 @@ function GameSatus() {
             </div>
           </article>
         </section>
-      </section>
-    </aside>
+      </article>
+    </section>
   );
 }
 
