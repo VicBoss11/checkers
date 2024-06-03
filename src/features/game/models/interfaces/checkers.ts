@@ -43,3 +43,11 @@ export interface Move {
   isCaptureMove: boolean;
   isImmediateMove: boolean;
 }
+
+export interface MoveHistoryItem {
+  turn: PieceSet;
+  fromSquare: Square;
+  toSquare: Square;
+  capturedSquare: TakenSquare | null;
+  isCaptureMove: boolean;
+}
