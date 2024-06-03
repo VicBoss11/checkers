@@ -46,13 +46,13 @@ function TurnInfo() {
     .slice(14, 19);
 
   return (
-    <aside className="turn-info">
+    <div className="turn-info">
       <span className="turn-info-player">{player.name}</span>
       <span className="turn-info-time">{timeRemaining}</span>
       <span className={`turn-info-piece-set ${pieceSetClassName}`}>
         {displayPlayerSet}
       </span>
-    </aside>
+    </div>
   );
 }
 
