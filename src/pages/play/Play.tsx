@@ -13,7 +13,7 @@ function Play(): ReactElement {
       <CheckersProvider>
         <section className="play">
           <section className="game">
-            <aside className="turn-info-container">
+            <aside className="game-turn-info">
               <TurnInfo></TurnInfo>
             </aside>
 
@@ -22,7 +22,7 @@ function Play(): ReactElement {
               <MoveLog></MoveLog>
             </aside>
 
-            <section className="checkers-container">
+            <section className="game-checkers">
               <Checkers></Checkers>
             </section>
           </section>
