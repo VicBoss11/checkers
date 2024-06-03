@@ -6,7 +6,12 @@ import {
   DEFAULT_LIGHT_PIECES_REMAINIG,
 } from '../constants/checkers-default';
 import { buildDefaultCheckerboard } from '../helpers/checkerboard-helper';
-import { Player, Square, TakenSquare } from '../models/interfaces/checkers';
+import {
+  MoveHistoryItem,
+  Player,
+  Square,
+  TakenSquare,
+} from '../models/interfaces/checkers';
 import { CheckersContext } from '../models/interfaces/checkers-context';
 import { Settings, RuleSet } from '../models/interfaces/checkers-settings';
 import { PieceSet } from '../models/enums/checkers';
@@ -31,6 +36,8 @@ function useDefaultCheckers(): CheckersContext {
   const [activeSquare, setActiveSquare] = useState<TakenSquare | null>(null);
 
   const [currentPaths, setCurrentPaths] = useState<MovePath[]>([]);
+  const [moveHistory, setMoveHistory] = useState<MoveHistoryItem[]>([]);
+
   const [lightsRemaining, setLightsRemaining] = useState<number>(
     DEFAULT_LIGHT_PIECES_REMAINIG
   );
@@ -56,6 +63,7 @@ function useDefaultCheckers(): CheckersContext {
       selectedSquare,
       activeSquare,
       currentPaths,
+      moveHistory,
       lightsRemaining,
       darksRemaining,
       lightKingsCount,
@@ -74,6 +82,7 @@ function useDefaultCheckers(): CheckersContext {
       setSelectedSquare,
       setActiveSquare,
       setCurrentPaths,
+      setMoveHistory,
       setLightsRemaining,
       setDarksRemaining,
       setLightKingsCount,

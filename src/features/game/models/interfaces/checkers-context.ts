@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from 'react';
 import { PieceSet } from '../enums/checkers';
 import { Checkerboard, MovePath } from '../types/checkers';
 import { Settings, RuleSet } from './checkers-settings';
-import { Player, Square, TakenSquare } from './checkers';
+import { MoveHistoryItem, Player, Square, TakenSquare } from './checkers';
 import { GameState } from './game-state';
 
 export interface CheckersContext {
@@ -20,6 +20,7 @@ export interface CheckersContext {
     setSelectedSquare: Dispatch<SetStateAction<Square | null>>;
     setActiveSquare: Dispatch<SetStateAction<TakenSquare | null>>;
     setCurrentPaths: Dispatch<SetStateAction<MovePath[]>>;
+    setMoveHistory: Dispatch<SetStateAction<MoveHistoryItem[]>>;
     setLightsRemaining: Dispatch<SetStateAction<number>>;
     setDarksRemaining: Dispatch<SetStateAction<number>>;
     setLightKingsCount: Dispatch<SetStateAction<number>>;

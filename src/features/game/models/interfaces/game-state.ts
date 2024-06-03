@@ -1,7 +1,7 @@
 import { PieceSet } from '../enums/checkers';
 import { Checkerboard, MovePath } from '../types/checkers';
 import { Settings, RuleSet } from './checkers-settings';
-import { Player, Square, TakenSquare } from './checkers';
+import { MoveHistoryItem, Player, Square, TakenSquare } from './checkers';
 
 export interface GameState {
   settings: Settings;
@@ -16,6 +16,7 @@ export interface GameState {
   selectedSquare: Square | null;
   activeSquare: TakenSquare | null;
   currentPaths: MovePath[];
+  moveHistory: MoveHistoryItem[];
   lightsRemaining: number;
   darksRemaining: number;
   lightKingsCount: number;

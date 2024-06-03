@@ -39,6 +39,7 @@ function usePlayableSquare(square: Square): PlayableSquareHook {
     setSelectedSquare,
     setActiveSquare,
     setCurrentPaths,
+    setMoveHistory,
   } = setFunctions;
 
   const isSelected = selectedSquare?.id === square.id;
@@ -174,6 +175,20 @@ function usePlayableSquare(square: Square): PlayableSquareHook {
     }
 
     setActiveSquare(null);
+
+    setMoveHistory((prevMoveHistory) => [
+      {
+        turn,
+        fromSquare,
+        toSquare,
+        capturedSquare: currentPaths
+          .flat()
+          .find((move) => move.square.id === toSquare.id)!.capturedSquare,
+        isCaptureMove,
+      },
+      ...prevMoveHistory,
+    ]);
+
     setCheckerboard(newCheckerboard);
     setUiCheckerboard(newCheckerboard);
   };
