@@ -159,12 +159,17 @@ function usePlayableSquare(square: Square): PlayableSquareHook {
     const toSquare: Square = square;
 
     const isCaptureMove = checkForCaptureMove(toSquare, currentPaths);
+    // From all the current paths, we filter out the ones that are immediate
+    // moves and target square is the same as toSquare
+    const immediatePaths = currentPaths.filter(
+      (path) => path[0].isImmediateMove && path[0].square.id === toSquare.id
+    );
 
     const newCheckerboard = move(
       fromSquare,
       toSquare,
       checkerboard,
-      currentPaths,
+      immediatePaths,
       isCaptureMove
     );
 
@@ -181,9 +186,11 @@ function usePlayableSquare(square: Square): PlayableSquareHook {
         turn,
         fromSquare,
         toSquare,
-        capturedSquare: currentPaths
-          .flat()
-          .find((move) => move.square.id === toSquare.id)!.capturedSquare,
+        capturedSquare: isCaptureMove
+          ? immediatePaths
+              .flat()
+              .find((move) => move.square.id === toSquare.id)!.capturedSquare
+          : null,
         isCaptureMove,
       },
       ...prevMoveHistory,
