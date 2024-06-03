@@ -47,10 +47,12 @@
 
   &.piece-set--is-light::before {
     background-color: #fff;
+    border: 0.1px solid rgba(0, 0, 0, 0.5);
   }
 
   &.piece-set--is-dark::before {
     background-color: #000;
+    border: 0.1px solid rgb(255, 255, 255, 0.5);
   }
 }
 
