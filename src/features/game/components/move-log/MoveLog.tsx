@@ -1,7 +1,6 @@
 import { Fragment, ReactElement, useContext, useEffect } from 'react';
 import {
   IconArrowNarrowRight,
-  IconCaptureFilled,
   IconCaretRightFilled,
 } from '@tabler/icons-react';
 import { CheckersContext } from '@features/game/context/checkers-context';

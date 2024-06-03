@@ -1,13 +1,11 @@
-.move-log {
+.move-log,
+.move-log-content {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-small);
+}
 
-  width: 100%;
-  min-width: fit-content;
-  max-width: 250px;
-  height: fit-content;
-  max-height: 100%;
+.move-log {
   padding: var(--spacing-large);
 
   border-radius: var(--border-radius-medium);
@@ -22,17 +20,12 @@
 }
 
 .move-log-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-small);
-
-  width: 100%;
-  max-width: 221.67px;
+  max-width: 195.48px;
   min-height: calc(1.5rem + var(--spacing-small) * 2);
-  height: fit-content;
-  max-height: 200px;
+  max-height: 152px;
   margin: var(--spacing-small) 0;
   padding: var(--spacing-small);
+
   overflow: auto;
 
   border-radius: var(--border-radius-medium);
@@ -40,24 +33,35 @@
   color: var(--color-tertiary);
 }
 
-.move-log-move {
+.move-log-move,
+.move-log-move-value,
+.move-history-log-move,
+.move-history-log-captured-piece {
   display: flex;
   align-items: center;
+}
+
+.possible-move-item,
+.move-history-log-move,
+.move-history-log-captured-piece {
+  gap: 0.25rem;
+}
+
+.move-log-move {
   gap: var(--spacing-small);
 
-  font-size: calc(var(--font-size-small));
+  width: fit-content;
+  font-size: 0.9rem;
 }
 
 .move-log-move-label {
-  --size: 1.15rem;
+  --size: 1.5rem;
 
   display: grid;
   place-content: center;
 
-  min-width: var(--size);
-  min-height: var(--size);
-  max-width: var(--size);
-  max-height: var(--size);
+  width: var(--size);
+  height: var(--size);
 
   border-radius: 50%;
   background-color: var(--color-tertiary);
@@ -65,11 +69,38 @@
 
   text-align: center;
   font-size: var(--font-size-small);
+  font-weight: bold;
 }
 
-.move-log-move-value {
-  display: flex;
-  align-items: center;
+.move-history-log-item {
+  gap: 0.5rem;
+
+  width: fit-content;
+
+  &::before {
+    --size: 0.75rem;
+
+    content: '';
+
+    width: var(--size);
+    height: var(--size);
+
+    border-radius: 50%;
+  }
+
+  &.turn-light::before {
+    background-color: #fff;
+    border: 0.1px solid rgba(0, 0, 0, 0.5);
+  }
+
+  &.turn-dark::before {
+    background-color: #000;
+    border: 0.1px solid rgb(255, 255, 255, 0.5);
+  }
+}
+
+.move-history-log-captured-piece span {
+  white-space: nowrap;
 }
 
 @media (prefers-color-scheme: dark) {
